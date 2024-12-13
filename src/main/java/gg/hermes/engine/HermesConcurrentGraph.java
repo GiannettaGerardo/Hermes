@@ -50,7 +50,7 @@ final class HermesConcurrentGraph implements HermesGraph
             throw new IllegalHermesProcess("");
         }
 
-        startingNodeIdx = hermesProcess.startingNodeIdx();
+        startingNodeIdx = getNodeIdxFromId(hermesProcess.startingNodeId());
 
         ptrList = new HermesAtomicReferenceArray<>(1);
         ptrList.set(0, new GraphPtr(startingNodeIdx));
@@ -195,11 +195,9 @@ final class HermesConcurrentGraph implements HermesGraph
             }
             catch (JsonLogicException | ClassCastException e) {
                 log.error(e.getMessage());
-                throw new IllegalHermesProcess("Condition of Arch ("
-                        + graph[source].task.getId()
-                        + ", "
-                        + graph[destination].task.getId()
-                        + ") is not a correct Json Logic Expression.");
+                throw new IllegalHermesProcess(
+                        String.format("Condition of Arch (%s, %s) is not a correct Json Logic Expression.",
+                                graph[source].task.getId(), graph[destination].task.getId()));
             }
         }
     }

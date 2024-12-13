@@ -1,28 +1,24 @@
 {
   "simple-process-1": {
-    "startingNodeIdx": 0,
+    "startingNodeId": "id_1",
     "nodes": [
       {
         "id": "id_1",
         "type": "NORMAL",
-        "description": "descrizione di prova 1",
         "numberOfVariables": 1
       },
       {
         "id": "id_3",
         "type": "ENDING",
-        "description": "descrizione di prova 3",
         "goodEnding": false
       },
       {
         "id": "id_4",
-        "type": "NORMAL",
-        "description": "descrizione di prova 4"
+        "type": "NORMAL"
       },
       {
         "id": "id_5",
         "type": "ENDING",
-        "description": "descrizione di prova 5",
         "goodEnding": true
       }
     ],

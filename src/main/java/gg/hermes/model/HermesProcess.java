@@ -8,6 +8,6 @@ import java.util.List;
 public record HermesProcess(
         List<Task> nodes,
         List<Arch> arches,
-        Integer startingNodeIdx
+        String startingNodeId
 ) {
 }
