@@ -2,8 +2,6 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-src/main/java/gg/hermes/test/**
-src/main/java/gg/hermes/Main.java
 
 ### IntelliJ IDEA ###
 .idea

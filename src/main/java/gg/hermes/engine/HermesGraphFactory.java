@@ -10,7 +10,7 @@ public final class HermesGraphFactory
 {
     private HermesGraphFactory() {}
 
-    public static HermesGraph getGraph(
+    public static HermesGraph getConcurrentGraph(
             final HermesProcess hermesProcess,
             final JsonLogicConfiguration jsonLogicConf,
             final Function<Class<?>, Logger> implementLogger
