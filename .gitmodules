@@ -1,0 +1,3 @@
+[submodule "src/main/java/gg/hermes/json-logic-java"]
+	path = src/main/java/gg/hermes/json-logic-java
+	url = https://github.com/GiannettaGerardo/json-logic-java.git

@@ -1,0 +1,50 @@
+{
+  "startingNodeIdx": 0,
+  "nodes": [
+    {
+      "id": "id_1",
+      "type": "NORMAL",
+      "description": "descrizione di prova 1",
+      "numberOfVariables": 1
+    },
+    {
+      "id": "id_3",
+      "type": "ENDING",
+      "description": "descrizione di prova 3",
+      "goodEnding": false
+    },
+    {
+      "id": "id_4",
+      "type": "NORMAL",
+      "description": "descrizione di prova 4"
+    },
+    {
+      "id": "id_5",
+      "type": "ENDING",
+      "description": "descrizione di prova 5",
+      "goodEnding": true
+    }
+  ],
+  "arches": [
+    {
+      "source": "id_1",
+      "condition": {
+        "rule": "{ \"==\": [1, 1] }",
+        "data": null
+      },
+      "destination": "id_4"
+    },
+    {
+      "source": "id_1",
+      "condition": {
+        "rule": "{ \"==\": [1, 2] }",
+        "data": null
+      },
+      "destination": "id_3"
+    },
+    {
+      "source": "id_4",
+      "destination": "id_5"
+    }
+  ]
+}
