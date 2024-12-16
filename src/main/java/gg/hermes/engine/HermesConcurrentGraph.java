@@ -1,7 +1,7 @@
 package gg.hermes.engine;
 
 import gg.hermes.exception.IllegalHermesProcess;
-import gg.hermes.model.HermesProcess;
+import gg.hermes.HermesProcess;
 import gg.hermes.tasks.Arch;
 import gg.hermes.tasks.ITask;
 import gg.hermes.tasks.TaskFactory;
@@ -15,6 +15,7 @@ import io.github.jamsesso.jsonlogic.evaluator.JsonLogicEvaluator;
 import org.slf4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -22,7 +23,8 @@ final class HermesConcurrentGraph implements HermesGraph
 {
     private final Logger log;
     private final GraphNode[] graph;
-    private final HermesAtomicReferenceArray<GraphPtr> ptrList;
+    private final Map<String, Map<String, Object>> nodeVariables;
+    private final AtomicReferenceArray<GraphPtr> ptrList;
     private final JsonLogicEvaluator jsonLogicEvaluator;
     private final int startingNodeIdx;
 
@@ -32,13 +34,26 @@ final class HermesConcurrentGraph implements HermesGraph
 
         // TODO bisogna validare tutto prima
 
-        final int nodeListSize = hermesProcess.nodes().size();
+        final int nodeListSize = hermesProcess.getNodes().size();
         graph = new GraphNode[nodeListSize];
 
+        int howManyNodeWithVariables = 0;
         for (int i = 0; i < nodeListSize; ++i)
         {
-            var task = hermesProcess.nodes().get(i);
+            var task = hermesProcess.getNodes().get(i);
             graph[i] = new GraphNode(TaskFactory.createNewTaskFrom(task, i));
+            Integer numberOfVariables = graph[i].task.getNumberOfVariables();
+            if (numberOfVariables != null && numberOfVariables > 0) {
+                graph[i].variables = new HashMap<>(numberOfVariables);
+                ++howManyNodeWithVariables;
+            }
+        }
+
+        nodeVariables = new HashMap<>(howManyNodeWithVariables);
+        for (GraphNode node : graph) {
+            if (node.variables != null) {
+                nodeVariables.put(node.task.getId(), node.variables);
+            }
         }
 
         jsonLogicEvaluator = jsonLogicConf.getEvaluator();
@@ -50,9 +65,9 @@ final class HermesConcurrentGraph implements HermesGraph
             throw new IllegalHermesProcess("");
         }
 
-        startingNodeIdx = getNodeIdxFromId(hermesProcess.startingNodeId());
+        startingNodeIdx = getNodeIdxFromId(hermesProcess.getStartingNodeId());
 
-        ptrList = new HermesAtomicReferenceArray<>(1);
+        ptrList = new AtomicReferenceArray<>(1);
         ptrList.set(0, new GraphPtr(startingNodeIdx));
     }
 
@@ -63,12 +78,12 @@ final class HermesConcurrentGraph implements HermesGraph
             if (graph[i].task.getId().equals(id))
                 return i;
         }
-        throw new IllegalHermesProcess("");
+        throw new IllegalHermesProcess("Node ID " + id + " not found.");
     }
 
     private void createArches(final HermesProcess hermesProcess) throws JsonLogicParseException
     {
-        for (Arch arch : hermesProcess.arches())
+        for (Arch arch : hermesProcess.getArches())
         {
             final int sourceIdx = getNodeIdxFromId(arch.source());
             final int destinationIdx = getNodeIdxFromId(arch.destination());
@@ -78,10 +93,28 @@ final class HermesConcurrentGraph implements HermesGraph
 
             JsonLogicNode parsedCondition = null;
             if (arch.condition() != null) {
-                parsedCondition = JsonLogicParser.parse(arch.condition().getRule()); // TODO nella validazione, validare getRule != (null e blank)
+                parsedCondition = JsonLogicParser.parse(arch.condition());
             }
 
-            graph[sourceIdx].arches.add(new GraphArch(sourceIdx, destinationIdx, parsedCondition));
+            graph[sourceIdx].arches.add(new GraphArch(sourceIdx, destinationIdx, parsedCondition)); //conditionRuleDataFromList));
+        }
+    }
+
+    private GraphPtr findPtrById(final int toFind) {
+        final int size = ptrList.length();
+        for (int i = 0; i < size; ++i) {
+            GraphPtr ptr = ptrList.getAcquire(i);
+            if (ptr.idx == toFind) {
+                return ptr;
+            }
+        }
+        return null;
+    }
+
+    private void variablesRollback(final Map<String, Object> previousVariables, final int nodeIdx) {
+        if (previousVariables != null) {
+            graph[nodeIdx].variables = previousVariables;
+            nodeVariables.replace(graph[nodeIdx].task.getId(), previousVariables);
         }
     }
 
@@ -104,11 +137,15 @@ final class HermesConcurrentGraph implements HermesGraph
     }
 
     @Override
-    public int completeTask(final int currentNodeIdx)
+    public int completeTask(final int currentNodeIdx) {
+        return completeTask(currentNodeIdx, null);
+    }
+
+    @Override
+    public int completeTask(final int currentNodeIdx, final Map<String, Object> variables)
     {
-        int next;
-        GraphNode node;
-        final GraphPtr ptr = ptrList.findByPredicate(x -> x.idx == currentNodeIdx);
+        Map<String, Object> startingNodeVariables = null;
+        final GraphPtr ptr = findPtrById(currentNodeIdx);
         if (ptr == null)
             return RESULT_LOCK_REJECTED;
         int previous = ptr.idx;
@@ -119,17 +156,40 @@ final class HermesConcurrentGraph implements HermesGraph
         if (! ptr.lock.tryLock())
             return RESULT_LOCK_REJECTED;
         try {
-            while ((node = move(previous)) != null)
-            {
-                next = node.task.getIdx();
-                if (! node.task.isSpecial()) {
-                    ptr.idx = next;
-                    return RESULT_OK;
-                }
-                previous = next;
+            if (variables != null && !variables.isEmpty()) {
+                startingNodeVariables = new HashMap<>(graph[previous].variables);
+                graph[previous].variables.putAll(variables);
+            }
+            final int result = completeMovement(ptr);
+            if (result > 1) {
+                variablesRollback(startingNodeVariables, currentNodeIdx);
+            }
+            return result;
+        }
+        catch (final Exception exception) {
+            variablesRollback(startingNodeVariables, currentNodeIdx);
+            throw exception;
+        }
+        finally {
+            ptr.lock.unlock();
+        }
+    }
 
-                final ITask task = node.task;
-                switch (task.getType()) {
+    private int completeMovement(final GraphPtr ptr) {
+        GraphNode node;
+        int next;
+        int previous = ptr.idx;
+        while ((node = move(previous)) != null)
+        {
+            next = node.task.getIdx();
+            if (! node.task.isSpecial()) {
+                ptr.idx = next;
+                return RESULT_OK;
+            }
+            previous = next;
+
+            final ITask task = node.task;
+            switch (task.getType()) {
                 case ENDING:
                     ptr.idx = previous;
                     return task.isGoodEnding() ? RESULT_GOOD_ENDING : RESULT_BAD_ENDING;
@@ -138,20 +198,16 @@ final class HermesConcurrentGraph implements HermesGraph
                 default:
                     log.error("Invalid Task Type.");
                     return RESULT_INVALID_RESOLVE;
-                }
             }
-            return RESULT_NO_MOVE;
         }
-        finally {
-            ptr.lock.unlock();
-        }
+        return RESULT_NO_MOVE;
     }
 
     private GraphNode move(final int from)
     {
         for (final GraphArch arch : graph[from].arches) {
-            if (arch.isCondition()) {
-                if (arch.evaluate(null)) { // TODO passare data
+            if (arch.isConditional()) {
+                if (arch.evaluate()) {
                     return graph[arch.destination];
                 }
             }
@@ -166,10 +222,12 @@ final class HermesConcurrentGraph implements HermesGraph
     private static class GraphNode {
         final ITask task;
         List<GraphArch> arches;
+        Map<String, Object> variables;
 
         public GraphNode(ITask task) {
             this.task = task;
             arches = null;
+            variables = null;
         }
     }
 
@@ -185,13 +243,13 @@ final class HermesConcurrentGraph implements HermesGraph
             this.condition = condition;
         }
 
-        public boolean isCondition() {
+        public boolean isConditional() {
             return condition != null;
         }
 
-        public boolean evaluate(final Map<String, Object> data) {
+        public boolean evaluate() {
             try {
-                return (boolean) jsonLogicEvaluator.evaluate(condition, data);
+                return (boolean) jsonLogicEvaluator.evaluate(condition, nodeVariables);
             }
             catch (JsonLogicException | ClassCastException e) {
                 log.error(e.getMessage());

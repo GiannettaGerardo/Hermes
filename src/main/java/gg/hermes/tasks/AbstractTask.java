@@ -2,7 +2,7 @@ package gg.hermes.tasks;
 
 abstract class AbstractTask implements ITask
 {
-    protected transient int idx;
+    protected int idx;
     protected final String id;
     protected final String name;
     protected final String description;

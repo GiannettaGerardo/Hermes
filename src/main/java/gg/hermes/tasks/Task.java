@@ -2,7 +2,6 @@ package gg.hermes.tasks;
 
 public class Task implements ITask
 {
-    private transient int idx;
     private String id;
     private TaskType type;
     private String name;
@@ -23,7 +22,7 @@ public class Task implements ITask
 
     @Override
     public int getIdx() {
-        return idx;
+        return -1;
     }
 
     @Override

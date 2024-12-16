@@ -3,6 +3,7 @@ package gg.hermes.engine;
 import gg.hermes.tasks.ITask;
 
 import java.util.List;
+import java.util.Map;
 
 public interface HermesGraph
 {
@@ -15,4 +16,5 @@ public interface HermesGraph
 
     List<ITask> getCurrentTasks();
     int completeTask(int taskIdx);
+    int completeTask(int taskIdx, Map<String, Object> variables);
 }

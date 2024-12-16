@@ -1,6 +1,6 @@
 package gg.hermes.engine;
 
-import gg.hermes.model.HermesProcess;
+import gg.hermes.HermesProcess;
 import io.github.jamsesso.jsonlogic.JsonLogicConfiguration;
 import org.slf4j.Logger;
 

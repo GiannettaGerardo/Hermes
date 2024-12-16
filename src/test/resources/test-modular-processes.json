@@ -1,0 +1,60 @@
+{
+  "simple-process-1": {
+    "startingNodeId": "id_1",
+    "nodes": [
+      {
+        "id": "id_1",
+        "type": "NORMAL",
+        "numberOfVariables": 1
+      },
+      {
+        "id": "id_3",
+        "type": "ENDING",
+        "goodEnding": false
+      },
+      {
+        "id": "id_4",
+        "type": "NORMAL"
+      },
+      {
+        "id": "id_5",
+        "type": "ENDING",
+        "goodEnding": true
+      }
+    ],
+    "arches": {
+      "only-condition-no-data": [
+        {
+          "source": "id_1",
+          "condition": "{ \"===\": [1, 1] }",
+          "destination": "id_4"
+        },
+        {
+          "source": "id_1",
+          "condition": "{ \"===\": [1, 2] }",
+          "destination": "id_3"
+        },
+        {
+          "source": "id_4",
+          "destination": "id_5"
+        }
+      ],
+      "only-condition-with-data": [
+        {
+          "source": "id_1",
+          "condition": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }",
+          "destination": "id_4"
+        },
+        {
+          "source": "id_1",
+          "condition": "{ \"===\": [{ \"var\": \"id_1.my-value\" }, 1] }",
+          "destination": "id_3"
+        },
+        {
+          "source": "id_4",
+          "destination": "id_5"
+        }
+      ]
+    }
+  }
+}
