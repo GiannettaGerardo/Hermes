@@ -19,6 +19,10 @@
         "id": "id_5",
         "type": "ENDING",
         "goodEnding": true
+      },
+      {
+        "id": "id_6",
+        "type": "FORWARD"
       }
     ],
     "arches": {
@@ -52,6 +56,32 @@
         {
           "source": "id_4",
           "destination": "id_5"
+        }
+      ],
+      "condition-and-forward-with-data": [
+        {
+          "source": "id_1",
+          "condition": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }",
+          "destination": "id_4"
+        },
+        {
+          "source": "id_1",
+          "condition": "{ \"===\": [{ \"var\": \"id_1.my-value\" }, 1] }",
+          "destination": "id_6"
+        },
+        {
+          "source": "id_4",
+          "destination": "id_5"
+        },
+        {
+          "source": "id_6",
+          "condition": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }",
+          "destination": "id_4"
+        },
+        {
+          "source": "id_6",
+          "condition": "{ \"===\": [{ \"var\": \"id_1.my-value\" }, 1] }",
+          "destination": "id_3"
         }
       ]
     }

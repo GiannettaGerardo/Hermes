@@ -122,16 +122,14 @@ final class HermesConcurrentGraph implements HermesGraph
     public List<ITask> getCurrentTasks()
     {
         GraphNode node;
+        GraphPtr ptr;
         final int size = ptrList.length();
         // TODO attualmente ritorna riferimenti diretti ai Task. Valutare di ritornare cloni DTO dei Task
         final List<ITask> tasks = new ArrayList<>(size);
-        for (int i = 0; i < size; ++i)
-        {
-            node = graph[ptrList.getAcquire(i).idx];
-            if (node == null || TaskType.ENDING.equals(node.task.getType()))
-                continue;
-
-            tasks.add(node.task);
+        for (int i = 0; i < size; ++i) {
+            ptr = ptrList.getAcquire(i);
+            if (ptr != null && !(node = graph[ptr.idx]).isEnding())
+                tasks.add(node.task);
         }
         return tasks;
     }

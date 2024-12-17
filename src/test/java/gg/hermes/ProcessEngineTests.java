@@ -36,9 +36,9 @@ public class ProcessEngineTests
     }
 
     @Test
-    public void testSimpleProcessNoDataGoodEnding() throws Exception
+    public void testSimpleProcessOnlyConditionNoDataGoodEnding() throws Exception
     {
-        System.out.println("TEST: testSimpleProcessNoDataGoodEnding");
+        System.out.println("TEST: testSimpleProcessOnlyConditionNoDataGoodEnding");
         HermesProcess process = newProcess("simple-process-1", "only-condition-no-data");
         HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
         int res = 999;
@@ -51,12 +51,29 @@ public class ProcessEngineTests
     }
 
     @Test
-    public void testSimpleProcessWithDataBadEnding() throws Exception
+    public void testSimpleProcessOnlyConditionWithDataBadEnding() throws Exception
     {
-        System.out.println("TEST: testSimpleProcessWithDataBadEnding");
+        System.out.println("TEST: testSimpleProcessOnlyConditionWithDataBadEnding");
         HermesProcess process = newProcess("simple-process-1", "only-condition-with-data");
-        process.getNodes().get(0).setNumberOfVariables(1);
+        var node = process.getNodes().get(0);
+        node.setNumberOfVariables(1);
         HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
+        node.setNumberOfVariables(null);
+
+        final int res = nextTasks(graph, Collections.singletonMap("my-value", 1));
+
+        Assert.assertEquals(HermesGraph.BAD_ENDING, res);
+    }
+
+    @Test
+    public void testSimpleProcessConditionAndForwardWithDataBadEnding() throws Exception
+    {
+        System.out.println("TEST: testSimpleProcessConditionAndForwardWithDataBadEnding");
+        HermesProcess process = newProcess("simple-process-1", "condition-and-forward-with-data");
+        var node = process.getNodes().get(0);
+        node.setNumberOfVariables(1);
+        HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
+        node.setNumberOfVariables(null);
 
         final int res = nextTasks(graph, Collections.singletonMap("my-value", 1));
 
