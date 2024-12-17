@@ -4,8 +4,7 @@
     "nodes": [
       {
         "id": "id_1",
-        "type": "NORMAL",
-        "numberOfVariables": 1
+        "type": "NORMAL"
       },
       {
         "id": "id_3",

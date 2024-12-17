@@ -25,10 +25,9 @@ public class ProcessEngineTests
         return graph.completeTask(nextNodes.get(0).getIdx(), variables);
     }
 
-    public static HermesGraph newGraph(String processName, String archesModuleName) {
+    public static HermesProcess newProcess(String processName, String archesModuleName) {
         ModularHermesProcess mhp = ProcessesUtility.get(processName);
-        HermesProcess hp = new HermesProcess(mhp.nodes(), mhp.arches().get(archesModuleName), mhp.startingNodeId());
-        return HermesGraphFactory.getConcurrentGraph(hp, jsonLogicConfiguration, TestLog::new);
+        return new HermesProcess(mhp.nodes(), mhp.arches().get(archesModuleName), mhp.startingNodeId());
     }
 
     @After
@@ -40,24 +39,27 @@ public class ProcessEngineTests
     public void testSimpleProcessNoDataGoodEnding() throws Exception
     {
         System.out.println("TEST: testSimpleProcessNoDataGoodEnding");
-        HermesGraph graph = newGraph("simple-process-1", "only-condition-no-data");
+        HermesProcess process = newProcess("simple-process-1", "only-condition-no-data");
+        HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
         int res = 999;
 
         for (int i = 0; i < 2; ++i) {
             res = nextTasks(graph, null);
         }
 
-        Assert.assertEquals(HermesGraph.RESULT_GOOD_ENDING, res);
+        Assert.assertEquals(HermesGraph.GOOD_ENDING, res);
     }
 
     @Test
     public void testSimpleProcessWithDataBadEnding() throws Exception
     {
         System.out.println("TEST: testSimpleProcessWithDataBadEnding");
-        HermesGraph graph = newGraph("simple-process-1", "only-condition-with-data");
+        HermesProcess process = newProcess("simple-process-1", "only-condition-with-data");
+        process.getNodes().get(0).setNumberOfVariables(1);
+        HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
 
         final int res = nextTasks(graph, Collections.singletonMap("my-value", 1));
 
-        Assert.assertEquals(HermesGraph.RESULT_BAD_ENDING, res);
+        Assert.assertEquals(HermesGraph.BAD_ENDING, res);
     }
 }

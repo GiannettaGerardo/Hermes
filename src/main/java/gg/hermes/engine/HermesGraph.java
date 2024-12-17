@@ -7,12 +7,13 @@ import java.util.Map;
 
 public interface HermesGraph
 {
-    int RESULT_GOOD_ENDING = -10;
-    int RESULT_BAD_ENDING = -11;
-    int RESULT_LOCK_REJECTED = 0;
-    int RESULT_OK = 1;
-    int RESULT_NO_MOVE = 2;
-    int RESULT_INVALID_RESOLVE = 3;
+    int GOOD_ENDING = -10;
+    int BAD_ENDING = -11;
+    int LOCK_REJECTED = 0;
+    int SUCCESS = 1;
+    int NO_MOVE = 2;
+    int INVALID_RESOLVE = 3;
+    int INVALID_VARIABLES = 4;
 
     List<ITask> getCurrentTasks();
     int completeTask(int taskIdx);
