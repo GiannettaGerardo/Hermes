@@ -3,10 +3,9 @@ package gg.hermes;
 import gg.hermes.exception.IllegalHermesProcess;
 import gg.hermes.tasks.Arch;
 import gg.hermes.tasks.Task;
+import gg.hermes.tasks.TaskType;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class HermesProcess {
@@ -56,21 +55,26 @@ public class HermesProcess {
         if (startingNodeId == null || startingNodeId.isBlank())
             throw new IllegalHermesProcess("NULL or BLANK starting node Id.");
 
-        final Set<String> idSet = new HashSet<>(nodes.size());
+        final Map<String, Task> idMap = new HashMap<>(nodes.size());
         for (var task : nodes) {
             task.validate();
-            idSet.add(task.getId());
+            idMap.put(task.getId(), task);
         }
 
-        if (idSet.size() != nodes.size())
+        if (idMap.size() != nodes.size())
             throw new IllegalHermesProcess("At least 1 node Id is NOT UNIQUE.");
 
-        if (! idSet.contains(startingNodeId))
-            throw new IllegalHermesProcess("UNRECOGNIZED starting node Id.");
+        Task task;
+        if ((task = idMap.get(startingNodeId)) != null) {
+            if (! TaskType.NORMAL.equals(task.getType()))
+                throw new IllegalHermesProcess("Starting task type is NOT NORMAL.");
+        }
+        else throw new IllegalHermesProcess("UNRECOGNIZED starting node Id.");
+
 
         for (var arch : arches) {
             arch.validate();
-            if (!idSet.contains(arch.source()) || !idSet.contains(arch.destination()))
+            if (!idMap.containsKey(arch.source()) || !idMap.containsKey(arch.destination()))
                 throw new IllegalHermesProcess("UNRECOGNIZED arch Source or Destination.");
         }
     }
