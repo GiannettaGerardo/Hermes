@@ -6,7 +6,6 @@ import gg.hermes.tasks.Task;
 import gg.hermes.tasks.TaskType;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class HermesProcess {
     private List<Task> nodes;
@@ -81,10 +80,21 @@ public class HermesProcess {
 
         for (var arch : arches) {
             arch.validate();
-            if (!idMap.containsKey(arch.source()) || !idMap.containsKey(arch.destination()))
-                throw new IllegalHermesProcess("UNRECOGNIZED arch Source or Destination.");
             if (endingTasks.contains(arch.source()))
                 throw new IllegalHermesProcess("An ENDING task cannot have an ARCH.");
+
+            if (arch.conditions() != null) {
+                if (!idMap.containsKey(arch.source()))
+                    throw new IllegalHermesProcess("UNRECOGNIZED arch Source.");
+                for (var conditionArch : arch.conditions()) {
+                    if (!idMap.containsKey(conditionArch.destination()))
+                        throw new IllegalHermesProcess("UNRECOGNIZED arch Destination.");
+                }
+            }
+            else {
+                if (!idMap.containsKey(arch.source()) || !idMap.containsKey(arch.destination()))
+                    throw new IllegalHermesProcess("UNRECOGNIZED arch Source or Destination.");
+            }
         }
     }
 }

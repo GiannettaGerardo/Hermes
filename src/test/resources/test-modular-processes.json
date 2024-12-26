@@ -29,13 +29,21 @@
       "only-condition-no-data": [
         {
           "source": "id_1",
-          "condition": "{ \"===\": [1, 1] }",
-          "destination": "id_4"
+          "conditions": [
+            {
+              "destination": "id_4",
+              "condition": "{ \"===\": [1, 1] }"
+            }
+          ]
         },
         {
           "source": "id_1",
-          "condition": "{ \"===\": [1, 2] }",
-          "destination": "id_3"
+          "conditions": [
+            {
+              "condition": "{ \"===\": [1, 2] }",
+              "destination": "id_3"
+            }
+          ]
         },
         {
           "source": "id_4",
@@ -45,13 +53,21 @@
       "only-condition-with-data": [
         {
           "source": "id_1",
-          "condition": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }",
-          "destination": "id_4"
+          "conditions": [
+            {
+              "condition": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }",
+              "destination": "id_4"
+            }
+          ]
         },
         {
           "source": "id_1",
-          "condition": "{ \"===\": [{ \"var\": \"id_1.my-value\" }, 1] }",
-          "destination": "id_3"
+          "conditions": [
+            {
+              "condition": "{ \"===\": [{ \"var\": \"id_1.my-value\" }, 1] }",
+              "destination": "id_3"
+            }
+          ]
         },
         {
           "source": "id_4",
@@ -61,13 +77,21 @@
       "condition-and-forward-with-data": [
         {
           "source": "id_1",
-          "condition": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }",
-          "destination": "id_4"
+          "conditions": [
+            {
+              "condition": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }",
+              "destination": "id_4"
+            }
+          ]
         },
         {
           "source": "id_1",
-          "condition": "{ \"===\": [{ \"var\": \"id_1.my-value\" }, 1] }",
-          "destination": "id_6"
+          "conditions": [
+            {
+              "condition": "{ \"===\": [{ \"var\": \"id_1.my-value\" }, 1] }",
+              "destination": "id_6"
+            }
+          ]
         },
         {
           "source": "id_4",
@@ -75,13 +99,21 @@
         },
         {
           "source": "id_6",
-          "condition": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }",
-          "destination": "id_4"
+          "conditions": [
+            {
+              "condition": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }",
+              "destination": "id_4"
+            }
+          ]
         },
         {
           "source": "id_6",
-          "condition": "{ \"===\": [{ \"var\": \"id_1.my-value\" }, 1] }",
-          "destination": "id_3"
+          "conditions": [
+            {
+              "condition": "{ \"===\": [{ \"var\": \"id_1.my-value\" }, 1] }",
+              "destination": "id_3"
+            }
+          ]
         }
       ]
     }

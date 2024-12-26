@@ -21,6 +21,88 @@ import java.util.concurrent.locks.ReentrantLock;
 
 final class HermesConcurrentGraph implements HermesGraph
 {
+    private static class GraphNode {
+        final ITask task;
+        List<AbstractGraphArch> arches;
+
+        GraphNode(ITask task) {
+            this.task = task;
+            arches = null;
+        }
+
+        boolean isEnding() {
+            return TaskType.ENDING.equals(task.getType());
+        }
+    }
+
+    private abstract static class AbstractGraphArch {
+        final int source;
+
+        AbstractGraphArch(int source) {
+            this.source = source;
+        }
+
+        abstract int evaluate();
+    }
+
+    private static class GraphArch extends AbstractGraphArch {
+        final int destination;
+
+        GraphArch(int source, int destination) {
+            super(source);
+            this.destination = destination;
+        }
+
+        int evaluate() {
+            return destination;
+        }
+    }
+
+    private class ConditionalGraphArch extends AbstractGraphArch {
+        final List<ConditionArch> conditions;
+
+        ConditionalGraphArch(int source, int conditionListSize) {
+            super(source);
+            this.conditions = new ArrayList<>(conditionListSize);
+        }
+
+        void addCondition(int destination, JsonLogicNode condition) {
+            conditions.add(new ConditionArch(destination, condition));
+        }
+
+        int evaluate() {
+            for (var condition : conditions) {
+                if (condition.evaluate())
+                    return condition.destination;
+            }
+            return -1;
+        }
+
+        class ConditionArch {
+            final int destination;
+            final JsonLogicNode condition;
+
+            ConditionArch(int destination, JsonLogicNode condition) {
+                this.destination = destination;
+                this.condition = condition;
+            }
+
+            boolean evaluate() {
+                if (condition == null)
+                    return true;
+                try {
+                    return (boolean) jsonLogicEvaluator.evaluate(condition, graphVariables);
+                }
+                catch (JsonLogicException | ClassCastException e) {
+                    log.error(e.getMessage());
+                    throw new IllegalHermesProcess(
+                            String.format("Condition of Arch (%s, %s) is not a correct Json Logic Expression.",
+                                    graph[source].task.getId(), graph[destination].task.getId()));
+                }
+            }
+        }
+    }
+
     private final Logger log;
     private final GraphNode[] graph;
     private final Map<String, Map<String, Object>> graphVariables;
@@ -81,17 +163,26 @@ final class HermesConcurrentGraph implements HermesGraph
         try {
             for (final Arch arch : hermesProcess.getArches()) {
                 final int sourceIdx = getNodeIdxFromId(arch.source());
-                final int destinationIdx = getNodeIdxFromId(arch.destination());
                 if (graph[sourceIdx].arches == null) {
                     graph[sourceIdx].arches = new ArrayList<>();
                 }
 
-                JsonLogicNode parsedCondition = null;
-                if (arch.condition() != null) {
-                    parsedCondition = JsonLogicParser.parse(arch.condition());
+                AbstractGraphArch newArch;
+                List<Arch.ConditionArch> conditions;
+                if ((conditions = arch.conditions()) != null) {
+                    newArch = new ConditionalGraphArch(sourceIdx, conditions.size());
+                    ConditionalGraphArch cga = (ConditionalGraphArch) newArch;
+                    for (var conditionArch : conditions) {
+                        cga.addCondition(
+                                getNodeIdxFromId(conditionArch.destination()),
+                                conditionArch.condition() != null ? JsonLogicParser.parse(conditionArch.condition()) : null
+                        );
+                    }
+                } else {
+                    newArch = new GraphArch(sourceIdx, getNodeIdxFromId(arch.destination()));
                 }
 
-                graph[sourceIdx].arches.add(new GraphArch(sourceIdx, destinationIdx, parsedCondition));
+                graph[sourceIdx].arches.add(newArch);
             }
         } catch (JsonLogicParseException e) {
             log.error(e.getMessage());
@@ -207,57 +298,12 @@ final class HermesConcurrentGraph implements HermesGraph
 
     private GraphNode move(final int from)
     {
-        for (final GraphArch arch : graph[from].arches) {
-            if (arch.condition != null) {
-                if (arch.evaluate()) {
-                    return graph[arch.destination];
-                }
-            }
-            else {
-                // TODO fork obbligatorio in futuro
-                return graph[arch.destination];
-            }
+        int destination;
+        for (final AbstractGraphArch arch : graph[from].arches) {
+            if ((destination = arch.evaluate()) != -1)
+                return graph[destination];
         }
         return null;
-    }
-
-    private static class GraphNode {
-        final ITask task;
-        List<GraphArch> arches;
-
-        public GraphNode(ITask task) {
-            this.task = task;
-            arches = null;
-        }
-
-        public boolean isEnding() {
-            return TaskType.ENDING.equals(task.getType());
-        }
-    }
-
-    private class GraphArch
-    {
-        final int source;
-        final int destination;
-        final JsonLogicNode condition;
-
-        public GraphArch(int source, int destination, JsonLogicNode condition) {
-            this.source = source;
-            this.destination = destination;
-            this.condition = condition;
-        }
-
-        public boolean evaluate() {
-            try {
-                return (boolean) jsonLogicEvaluator.evaluate(condition, graphVariables);
-            }
-            catch (JsonLogicException | ClassCastException e) {
-                log.error(e.getMessage());
-                throw new IllegalHermesProcess(
-                        String.format("Condition of Arch (%s, %s) is not a correct Json Logic Expression.",
-                                graph[source].task.getId(), graph[destination].task.getId()));
-            }
-        }
     }
 }
 
