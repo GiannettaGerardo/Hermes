@@ -56,13 +56,20 @@ public class HermesProcess {
             throw new IllegalHermesProcess("NULL or BLANK starting node Id.");
 
         final Map<String, Task> idMap = new HashMap<>(nodes.size());
+        final Set<String> endingTasks = new HashSet<>();
         for (var task : nodes) {
             task.validate();
             idMap.put(task.getId(), task);
+            if (TaskType.ENDING.equals(task.getType())) {
+                endingTasks.add(task.getId());
+            }
         }
 
         if (idMap.size() != nodes.size())
             throw new IllegalHermesProcess("At least 1 node Id is NOT UNIQUE.");
+
+        if (endingTasks.isEmpty())
+            throw new IllegalHermesProcess("No ENDING tasks found.");
 
         Task task;
         if ((task = idMap.get(startingNodeId)) != null) {
@@ -76,6 +83,8 @@ public class HermesProcess {
             arch.validate();
             if (!idMap.containsKey(arch.source()) || !idMap.containsKey(arch.destination()))
                 throw new IllegalHermesProcess("UNRECOGNIZED arch Source or Destination.");
+            if (endingTasks.contains(arch.source()))
+                throw new IllegalHermesProcess("An ENDING task cannot have an ARCH.");
         }
     }
 }

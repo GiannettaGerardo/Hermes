@@ -26,14 +26,12 @@ final class HermesConcurrentGraph implements HermesGraph
     private final Map<String, Map<String, Object>> graphVariables;
     private final Map<Integer, Lock> lockingPointers;
     private final JsonLogicEvaluator jsonLogicEvaluator;
-    private final int startingNodeIdx;
-    private volatile boolean isEnd;
-    private volatile boolean isEndWithGoodEnding;
+    private volatile int isEnd;
 
     public HermesConcurrentGraph(HermesProcess hermesProcess, JsonLogicConfiguration jsonLogicConf, Logger log)
     {
         this.log = log;
-        isEnd = isEndWithGoodEnding = false;
+        isEnd = 0;
 
         // complete validation of the process
         hermesProcess.validate();
@@ -62,7 +60,7 @@ final class HermesConcurrentGraph implements HermesGraph
         jsonLogicEvaluator = jsonLogicConf.getEvaluator();
         createArches(hermesProcess);
 
-        startingNodeIdx = getNodeIdxFromId(hermesProcess.getStartingNodeId());
+        final int startingNodeIdx = getNodeIdxFromId(hermesProcess.getStartingNodeId());
 
         lockingPointers = new ConcurrentHashMap<>();
         lockingPointers.put(startingNodeIdx, new ReentrantLock());
@@ -101,14 +99,6 @@ final class HermesConcurrentGraph implements HermesGraph
         }
     }
 
-    private void completeTaskRollback(final GraphNode currentNode) {
-        var variables = graphVariables.get(currentNode.task.getId());
-        if (variables != null && !variables.isEmpty()) {
-            final Map<String, Object> emptyMap = new HashMap<>(currentNode.task.getNumberOfVariables());
-            graphVariables.replace(currentNode.task.getId(), emptyMap);
-        }
-    }
-
     private boolean areExternalVariablesValid(final int currentNodeIdx, final Map<String, Object> variables) {
         Integer nv = graph[currentNodeIdx].task.getNumberOfVariables();
         if (nv == null || nv <= 0) {
@@ -117,17 +107,18 @@ final class HermesConcurrentGraph implements HermesGraph
         return variables != null && variables.size() == nv;
     }
 
-    private int resolveGoodOrBadEnding(boolean isGoodEnding) {
-        return isGoodEnding ? GOOD_ENDING : BAD_ENDING;
+    private void completeTaskRollback(final Map<String, Object> currentNodeVariables) {
+        if (currentNodeVariables != null && !currentNodeVariables.isEmpty()) {
+            currentNodeVariables.clear();
+        }
     }
 
     @Override
     public List<ITask> getCurrentTasks()
     {
-        if (isEnd)
+        if (isEnd < 0)
             return Collections.emptyList();
 
-        // TODO attualmente ritorna riferimenti diretti ai Task. Valutare di ritornare cloni DTO dei Task
         final List<ITask> tasks = new ArrayList<>(lockingPointers.size());
         for (int ptr : lockingPointers.keySet()) {
             if (! graph[ptr].isEnding())
@@ -144,7 +135,7 @@ final class HermesConcurrentGraph implements HermesGraph
     @Override
     public int completeTask(final int currentNodeIdx, final Map<String, Object> variables)
     {
-        if (isEnd) return resolveGoodOrBadEnding(isEndWithGoodEnding);
+        if (isEnd < 0) return isEnd;
 
         final Lock lock = lockingPointers.get(currentNodeIdx);
         if (lock == null)
@@ -154,8 +145,6 @@ final class HermesConcurrentGraph implements HermesGraph
             return INVALID_VARIABLES;
 
         final GraphNode currentNode = graph[currentNodeIdx];
-        if (currentNode.isEnding())
-            return resolveGoodOrBadEnding(currentNode.task.isGoodEnding());
 
         Map<String, Object> currentNodeVariables = null;
         if (variables != null && !variables.isEmpty()) {
@@ -167,16 +156,19 @@ final class HermesConcurrentGraph implements HermesGraph
         try {
             if (currentNodeVariables != null) {
                 // in case of rollback, variables of this node will be empty again
-                currentNodeVariables.putAll(variables);
+                if (currentNodeVariables.isEmpty())
+                    currentNodeVariables.putAll(variables);
+                else
+                    currentNodeVariables.replaceAll(variables::getOrDefault);
             }
             final int result = completeMovement(currentNodeIdx);
             if (result > 1) {
-                completeTaskRollback(currentNode);
+                completeTaskRollback(currentNodeVariables);
             }
             return result;
         }
         catch (final Exception exception) {
-            completeTaskRollback(currentNode);
+            completeTaskRollback(currentNodeVariables);
             throw exception;
         }
         finally {
@@ -201,9 +193,8 @@ final class HermesConcurrentGraph implements HermesGraph
             switch (task.getType()) {
             case ENDING:
                 lockingPointers.remove(pointerKey);
-                isEnd = true;
-                isEndWithGoodEnding = task.isGoodEnding();
-                return resolveGoodOrBadEnding(task.isGoodEnding());
+                isEnd = task.isGoodEnding() ? GOOD_ENDING : BAD_ENDING;
+                return isEnd;
             case FORWARD:
                 break;
             default:
@@ -217,7 +208,7 @@ final class HermesConcurrentGraph implements HermesGraph
     private GraphNode move(final int from)
     {
         for (final GraphArch arch : graph[from].arches) {
-            if (arch.isConditional()) {
+            if (arch.condition != null) {
                 if (arch.evaluate()) {
                     return graph[arch.destination];
                 }
@@ -254,10 +245,6 @@ final class HermesConcurrentGraph implements HermesGraph
             this.source = source;
             this.destination = destination;
             this.condition = condition;
-        }
-
-        public boolean isConditional() {
-            return condition != null;
         }
 
         public boolean evaluate() {
