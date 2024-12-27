@@ -57,14 +57,8 @@
             {
               "condition": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }",
               "destination": "id_4"
-            }
-          ]
-        },
-        {
-          "source": "id_1",
-          "conditions": [
+            },
             {
-              "condition": "{ \"===\": [{ \"var\": \"id_1.my-value\" }, 1] }",
               "destination": "id_3"
             }
           ]
@@ -81,14 +75,8 @@
             {
               "condition": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }",
               "destination": "id_4"
-            }
-          ]
-        },
-        {
-          "source": "id_1",
-          "conditions": [
+            },
             {
-              "condition": "{ \"===\": [{ \"var\": \"id_1.my-value\" }, 1] }",
               "destination": "id_6"
             }
           ]
@@ -103,14 +91,8 @@
             {
               "condition": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }",
               "destination": "id_4"
-            }
-          ]
-        },
-        {
-          "source": "id_6",
-          "conditions": [
+            },
             {
-              "condition": "{ \"===\": [{ \"var\": \"id_1.my-value\" }, 1] }",
               "destination": "id_3"
             }
           ]
