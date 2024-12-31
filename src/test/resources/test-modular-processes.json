@@ -2,101 +2,82 @@
   "simple-process-1": {
     "startingNodeId": "id_1",
     "nodes": [
-      {
-        "id": "id_1",
-        "type": "NORMAL"
-      },
-      {
-        "id": "id_3",
-        "type": "ENDING",
-        "goodEnding": false
-      },
-      {
-        "id": "id_4",
-        "type": "NORMAL"
-      },
-      {
-        "id": "id_5",
-        "type": "ENDING",
-        "goodEnding": true
-      },
-      {
-        "id": "id_6",
-        "type": "FORWARD"
-      }
+      { "id": "id_1",  "type": "NORMAL" },
+      { "id": "id_2",  "type": "NORMAL" },
+      { "id": "id_3",  "type": "ENDING", "goodEnding": false },
+      { "id": "id_4",  "type": "NORMAL" },
+      { "id": "id_5",  "type": "ENDING", "goodEnding": true },
+      { "id": "id_6",  "type": "FORWARD" },
+      { "id": "id_7",  "type": "NORMAL" },
+      { "id": "id_8",  "type": "NORMAL" },
+      { "id": "id_9",  "type": "NORMAL" },
+      { "id": "id_10", "type": "NORMAL" },
+      { "id": "id_11", "type": "NORMAL" }
     ],
     "arches": {
       "only-condition-no-data": [
-        {
-          "source": "id_1",
-          "conditions": [
-            {
-              "destination": "id_4",
-              "condition": "{ \"===\": [1, 1] }"
-            }
-          ]
-        },
-        {
-          "source": "id_1",
-          "conditions": [
-            {
-              "condition": "{ \"===\": [1, 2] }",
-              "destination": "id_3"
-            }
-          ]
-        },
-        {
-          "source": "id_4",
-          "destination": "id_5"
-        }
+        { "src": "id_1", "conditions": [{ "dst": "id_4", "IF": "{ \"===\": [1, 1] }" }] },
+        { "src": "id_1", "conditions": [{ "dst": "id_3", "IF": "{ \"===\": [1, 2] }" }] },
+        { "src": "id_4", "dst": "id_5" }
       ],
       "only-condition-with-data": [
         {
-          "source": "id_1",
+          "src": "id_1",
           "conditions": [
-            {
-              "condition": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }",
-              "destination": "id_4"
-            },
-            {
-              "destination": "id_3"
-            }
+            { "dst": "id_4", "IF": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }" },
+            { "dst": "id_3" }
           ]
         },
-        {
-          "source": "id_4",
-          "destination": "id_5"
-        }
+        { "src": "id_4", "dst": "id_5" }
       ],
       "condition-and-forward-with-data": [
         {
-          "source": "id_1",
+          "src": "id_1",
           "conditions": [
-            {
-              "condition": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }",
-              "destination": "id_4"
-            },
-            {
-              "destination": "id_6"
-            }
+            { "dst": "id_4", "IF": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }" },
+            { "dst": "id_6" }
           ]
         },
+        { "src": "id_4", "dst": "id_5" },
         {
-          "source": "id_4",
-          "destination": "id_5"
-        },
-        {
-          "source": "id_6",
+          "src": "id_6",
           "conditions": [
-            {
-              "condition": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }",
-              "destination": "id_4"
-            },
-            {
-              "destination": "id_3"
-            }
+            { "dst": "id_4", "IF": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }" },
+            { "dst": "id_3" }
           ]
         }
+      ],
+      "hermes-process-good-1": [
+        { "src": "id_1",  "dst": "id_2"  },
+        { "src": "id_2",  "dst": "id_4"  },
+        { "src": "id_2",  "dst": "id_5"  },
+        { "src": "id_2",  "dst": "id_6"  },
+        { "src": "id_2",  "dst": "id_8"  },
+        { "src": "id_4",  "dst": "id_3"  },
+        { "src": "id_6",  "dst": "id_7"  },
+        { "src": "id_7",  "dst": "id_1"  },
+        { "src": "id_8",  "dst": "id_9"  },
+        { "src": "id_9",  "dst": "id_10" },
+        { "src": "id_9",  "dst": "id_11" },
+        { "src": "id_10", "dst": "id_8"  }
+      ],
+      "hermes-process-bad-1": [
+        { "src": "id_1",  "dst": "id_2"  },
+        { "src": "id_2",  "dst": "id_5"  },
+        { "src": "id_2",  "dst": "id_6"  },
+        { "src": "id_2",  "dst": "id_8"  },
+        { "src": "id_8",  "dst": "id_9"  },
+        { "src": "id_9",  "dst": "id_10" },
+        { "src": "id_9",  "dst": "id_11" },
+        { "src": "id_10", "dst": "id_8"  },
+        { "src": "id_11", "dst": "id_6"  }
+      ],
+      "hermes-process-bad-2": [
+        { "src": "id_1",  "dst": "id_2"  },
+        { "src": "id_2",  "dst": "id_5"  },
+        { "src": "id_2",  "dst": "id_6"  },
+        { "src": "id_2",  "dst": "id_8"  },
+        { "src": "id_6",  "dst": "id_5"  }
       ]
     }
   }

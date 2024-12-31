@@ -2,10 +2,7 @@ package gg.hermes.engine;
 
 import gg.hermes.exception.IllegalHermesProcess;
 import gg.hermes.HermesProcess;
-import gg.hermes.tasks.Arch;
-import gg.hermes.tasks.ITask;
-import gg.hermes.tasks.TaskFactory;
-import gg.hermes.tasks.TaskType;
+import gg.hermes.tasks.*;
 import io.github.jamsesso.jsonlogic.JsonLogicConfiguration;
 import io.github.jamsesso.jsonlogic.JsonLogicException;
 import io.github.jamsesso.jsonlogic.ast.JsonLogicNode;
@@ -31,7 +28,7 @@ final class HermesConcurrentGraph implements HermesGraph
         }
 
         boolean isEnding() {
-            return TaskType.ENDING.equals(task.getType());
+            return TaskType.ENDING == task.getType();
         }
     }
 
@@ -112,16 +109,31 @@ final class HermesConcurrentGraph implements HermesGraph
 
     public HermesConcurrentGraph(HermesProcess hermesProcess, JsonLogicConfiguration jsonLogicConf, Logger log)
     {
-        this.log = log;
-        isEnd = 0;
-
         // complete validation of the process
         hermesProcess.validate();
 
-        final int nodeListSize = hermesProcess.getNodes().size();
-        graph = new GraphNode[nodeListSize];
+        this.log = log;
+        isEnd = 0;
+        jsonLogicEvaluator = jsonLogicConf.getEvaluator();
 
+        graph = new GraphNode[hermesProcess.getNodes().size()];
+
+        final int howManyNodeWithVariables = createGraphNodes(hermesProcess);
+        graphVariables = new HashMap<>(howManyNodeWithVariables);
+        initializeGraphVariables();
+
+        createArches(hermesProcess);
+
+        final int startingNodeIdx = getNodeIdxFromId(hermesProcess.getStartingNodeId());
+
+        lockingPointers = new ConcurrentHashMap<>();
+        lockingPointers.put(startingNodeIdx, new ReentrantLock());
+    }
+
+    private int createGraphNodes(HermesProcess hermesProcess)
+    {
         int howManyNodeWithVariables = 0;
+        final int nodeListSize = hermesProcess.getNodes().size();
         for (int i = 0; i < nodeListSize; ++i)
         {
             var task = hermesProcess.getNodes().get(i);
@@ -130,22 +142,49 @@ final class HermesConcurrentGraph implements HermesGraph
             if (numberOfVariables != null && numberOfVariables > 0)
                 ++howManyNodeWithVariables;
         }
+        return howManyNodeWithVariables;
+    }
 
-        graphVariables = new HashMap<>(howManyNodeWithVariables);
+    private void initializeGraphVariables()
+    {
         for (GraphNode node : graph) {
             Integer nv;
             if ((nv = node.task.getNumberOfVariables()) != null && nv > 0) {
                 graphVariables.put(node.task.getId(), new HashMap<>(nv));
             }
         }
+    }
 
-        jsonLogicEvaluator = jsonLogicConf.getEvaluator();
-        createArches(hermesProcess);
+    private void createArches(final HermesProcess hermesProcess)
+    {
+        try {
+            for (final Arch arch : hermesProcess.getArches()) {
+                final int sourceIdx = getNodeIdxFromId(arch.src());
+                if (graph[sourceIdx].arches == null) {
+                    graph[sourceIdx].arches = new ArrayList<>();
+                }
 
-        final int startingNodeIdx = getNodeIdxFromId(hermesProcess.getStartingNodeId());
+                AbstractGraphArch newArch;
+                List<Arch.ConditionArch> conditions;
+                if ((conditions = arch.conditions()) != null) {
+                    newArch = new ConditionalGraphArch(sourceIdx, conditions.size());
+                    ConditionalGraphArch cga = (ConditionalGraphArch) newArch;
+                    for (var conditionArch : conditions) {
+                        cga.addCondition(
+                                getNodeIdxFromId(conditionArch.dst()),
+                                conditionArch.IF() != null ? JsonLogicParser.parse(conditionArch.IF()) : null
+                        );
+                    }
+                } else {
+                    newArch = new GraphArch(sourceIdx, getNodeIdxFromId(arch.dst()));
+                }
 
-        lockingPointers = new ConcurrentHashMap<>();
-        lockingPointers.put(startingNodeIdx, new ReentrantLock());
+                graph[sourceIdx].arches.add(newArch);
+            }
+        } catch (JsonLogicParseException e) {
+            log.error(e.getMessage());
+            throw new IllegalHermesProcess("");
+        }
     }
 
     private int getNodeIdxFromId(final String id)
@@ -158,50 +197,12 @@ final class HermesConcurrentGraph implements HermesGraph
         throw new IllegalHermesProcess("Node ID " + id + " not found.");
     }
 
-    private void createArches(final HermesProcess hermesProcess)
-    {
-        try {
-            for (final Arch arch : hermesProcess.getArches()) {
-                final int sourceIdx = getNodeIdxFromId(arch.source());
-                if (graph[sourceIdx].arches == null) {
-                    graph[sourceIdx].arches = new ArrayList<>();
-                }
-
-                AbstractGraphArch newArch;
-                List<Arch.ConditionArch> conditions;
-                if ((conditions = arch.conditions()) != null) {
-                    newArch = new ConditionalGraphArch(sourceIdx, conditions.size());
-                    ConditionalGraphArch cga = (ConditionalGraphArch) newArch;
-                    for (var conditionArch : conditions) {
-                        cga.addCondition(
-                                getNodeIdxFromId(conditionArch.destination()),
-                                conditionArch.condition() != null ? JsonLogicParser.parse(conditionArch.condition()) : null
-                        );
-                    }
-                } else {
-                    newArch = new GraphArch(sourceIdx, getNodeIdxFromId(arch.destination()));
-                }
-
-                graph[sourceIdx].arches.add(newArch);
-            }
-        } catch (JsonLogicParseException e) {
-            log.error(e.getMessage());
-            throw new IllegalHermesProcess("");
-        }
-    }
-
     private boolean areExternalVariablesValid(final int currentNodeIdx, final Map<String, Object> variables) {
         Integer nv = graph[currentNodeIdx].task.getNumberOfVariables();
         if (nv == null || nv <= 0) {
             return variables == null || variables.isEmpty();
         }
         return variables != null && variables.size() == nv;
-    }
-
-    private void completeTaskRollback(final Map<String, Object> currentNodeVariables) {
-        if (currentNodeVariables != null && !currentNodeVariables.isEmpty()) {
-            currentNodeVariables.clear();
-        }
     }
 
     @Override
@@ -246,64 +247,78 @@ final class HermesConcurrentGraph implements HermesGraph
             return LOCK_REJECTED;
         try {
             if (currentNodeVariables != null) {
-                // in case of rollback, variables of this node will be empty again
-                if (currentNodeVariables.isEmpty())
-                    currentNodeVariables.putAll(variables);
-                else
-                    currentNodeVariables.replaceAll(variables::getOrDefault);
+                currentNodeVariables.clear();
+                currentNodeVariables.putAll(variables);
             }
-            final int result = completeMovement(currentNodeIdx);
-            if (result > 1) {
-                completeTaskRollback(currentNodeVariables);
-            }
-            return result;
-        }
-        catch (final Exception exception) {
-            completeTaskRollback(currentNodeVariables);
-            throw exception;
+            return completeMovementWithFork(currentNodeIdx);
         }
         finally {
             lock.unlock();
         }
     }
 
-    private int completeMovement(final int pointerKey) {
-        GraphNode node;
-        int previous = pointerKey;
+    /**
+     Logic:
+     1. If no ENDING is found, the result is SUCCESS, otherwise it is the ENDING found;
+     2. In case of multiple ENDINGS, the first one found takes precedence;
+     3. If the process is not finished then the lock of the current pointer is reused.
+     */
+    private int completeMovementWithFork(final int pointerKey) {
         int next;
-        while ((node = move(previous)) != null)
-        {
-            next = node.task.getIdx();
-            if (! node.task.isSpecial()) {
-                lockingPointers.put(next, lockingPointers.remove(pointerKey));
-                return SUCCESS;
-            }
-            previous = next;
+        GraphNode node;
+        int finalResult = SUCCESS;
+        boolean lockReused = false;
+        final Queue<GraphNode> nodes = new ArrayDeque<>();
 
-            final ITask task = node.task;
-            switch (task.getType()) {
-            case ENDING:
-                lockingPointers.remove(pointerKey);
-                isEnd = task.isGoodEnding() ? GOOD_ENDING : BAD_ENDING;
-                return isEnd;
-            case FORWARD:
-                break;
-            default:
-                log.error("Invalid Task Type.");
-                return INVALID_RESOLVE;
+        moveWithFork(pointerKey, nodes);
+        if (! nodes.isEmpty())
+        {
+            while ((node = nodes.poll()) != null)
+            {
+                final ITask task = node.task;
+                next = task.getIdx();
+
+                switch (task.getType())
+                {
+                    case NORMAL:
+                        if (finalResult == SUCCESS && next != pointerKey) {
+                            if (lockReused) {
+                                lockingPointers.putIfAbsent(next, new ReentrantLock());
+                            }
+                            else {
+                                lockingPointers.putIfAbsent(next, lockingPointers.remove(pointerKey));
+                                lockReused = true;
+                            }
+                        }
+                        break;
+
+                    case ENDING:
+                        if (finalResult == SUCCESS)
+                            finalResult = isEnd = task.isGoodEnding() ? GOOD_ENDING : BAD_ENDING;
+                        break;
+
+                    case FORWARD:
+                        moveWithFork(next, nodes);
+                        break;
+
+                    default:
+                        String error = "Invalid Task Type at run time.";
+                        log.error(error);
+                        throw new IllegalHermesProcess(error);
+                }
             }
         }
-        return NO_MOVE;
+        lockingPointers.remove(pointerKey);
+        return finalResult;
     }
 
-    private GraphNode move(final int from)
+    private void moveWithFork(final int from, final Queue<GraphNode> pointers)
     {
         int destination;
         for (final AbstractGraphArch arch : graph[from].arches) {
             if ((destination = arch.evaluate()) != -1)
-                return graph[destination];
+                pointers.add(graph[destination]);
         }
-        return null;
     }
 }
 

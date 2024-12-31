@@ -11,9 +11,7 @@ public interface HermesGraph
     int BAD_ENDING = -11;
     int LOCK_REJECTED = 0;
     int SUCCESS = 1;
-    int NO_MOVE = 2;
-    int INVALID_RESOLVE = 3;
-    int INVALID_VARIABLES = 4;
+    int INVALID_VARIABLES = 2;
 
     List<ITask> getCurrentTasks();
     int completeTask(int taskIdx);

@@ -48,11 +48,6 @@ public class Task implements ITask
     }
 
     @Override
-    public boolean isSpecial() {
-        return type.equals(TaskType.FORWARD) || type.equals(TaskType.ENDING);
-    }
-
-    @Override
     public String getName() {
         return name;
     }

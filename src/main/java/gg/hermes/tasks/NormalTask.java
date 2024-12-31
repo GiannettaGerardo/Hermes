@@ -25,11 +25,6 @@ public class NormalTask extends AbstractTask
     }
 
     @Override
-    public boolean isSpecial() {
-        return false;
-    }
-
-    @Override
     public String toString() {
         return "NormalTask{" +
                 "idx=" + idx +

@@ -5,16 +5,16 @@ import gg.hermes.exception.IllegalHermesProcess;
 import java.util.List;
 
 public record Arch(
-        String source,
-        String destination,
+        String src,
+        String dst,
         List<ConditionArch> conditions
 ) {
     public void validate() {
-        if (source == null || source.isBlank())
+        if (src == null || src.isBlank())
             throw new IllegalHermesProcess("NULL or BLANK arch Source.");
 
         if (conditions != null) {
-            if (destination != null)
+            if (dst != null)
                 throw new IllegalHermesProcess("Destination must be NULL when the Arch has a Condition.");
 
             if (conditions.isEmpty())
@@ -23,18 +23,18 @@ public record Arch(
             final int size = conditions.size();
             for (int i = 0; i < size; ++i) {
                 final ConditionArch ca = conditions.get(i);
-                if (ca.destination == null || ca.destination.isBlank())
+                if (ca.dst == null || ca.dst.isBlank())
                     throw new IllegalHermesProcess("NULL or BLANK arch Destination in Condition Arch.");
 
-                if ((i == 0 || i < size - 1) && (ca.condition == null || ca.condition.isBlank()))
+                if ((i == 0 || i < size - 1) && (ca.IF == null || ca.IF.isBlank()))
                         throw new IllegalHermesProcess("NULL or BLANK Condition.");
             }
         }
         else {
-            if (destination == null || destination.isBlank())
+            if (dst == null || dst.isBlank())
                 throw new IllegalHermesProcess("NULL or BLANK arch Destination.");
         }
     }
 
-    public record ConditionArch(String destination, String condition) {}
+    public record ConditionArch(String dst, String IF) {}
 }

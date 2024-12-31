@@ -8,5 +8,4 @@ public interface ITask {
     TaskType getType();
     Integer getNumberOfVariables();
     Boolean isGoodEnding();
-    boolean isSpecial();
 }

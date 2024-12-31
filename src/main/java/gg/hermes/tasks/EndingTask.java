@@ -25,11 +25,6 @@ public class EndingTask extends AbstractTask
     }
 
     @Override
-    public boolean isSpecial() {
-        return true;
-    }
-
-    @Override
     public String toString() {
         return "EndingTask{" +
                 "idx=" + idx +
