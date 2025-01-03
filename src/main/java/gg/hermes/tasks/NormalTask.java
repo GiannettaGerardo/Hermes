@@ -15,13 +15,8 @@ public class NormalTask extends AbstractTask
     }
 
     @Override
-    public Integer getNumberOfVariables() {
+    public int getNumberOfVariables() {
         return numberOfVariables;
-    }
-
-    @Override
-    public Boolean isGoodEnding() {
-        return null;
     }
 
     @Override

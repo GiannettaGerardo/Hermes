@@ -7,7 +7,6 @@ import gg.hermes.testutility.ModularHermesProcess;
 import gg.hermes.testutility.ProcessesUtility;
 import gg.hermes.testutility.TestLog;
 import io.github.jamsesso.jsonlogic.JsonLogicConfiguration;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,7 +20,6 @@ public class ProcessEngineTests
 
     public static int nextTasks(HermesGraph graph, Map<String, Object> variables) {
         List<ITask> nextNodes = graph.getCurrentTasks();
-        System.out.println(nextNodes.toString());
         return graph.completeTask(nextNodes.get(0).getIdx(), variables);
     }
 
@@ -30,18 +28,12 @@ public class ProcessEngineTests
         return new HermesProcess(mhp.nodes(), mhp.arches().get(archesModuleName), mhp.startingNodeId());
     }
 
-    @After
-    public void printNewLine() {
-        System.out.println();
-    }
-
     @Test
     public void testOnlyConditionNoDataGoodEnding() throws Exception
     {
-        System.out.println("* TEST: testOnlyConditionNoDataGoodEnding");
         HermesProcess process = newProcess("simple-process-1", "only-condition-no-data");
         HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
-        int res = 999;
+        int res = 0;
 
         for (int i = 0; i < 2; ++i) {
             res = nextTasks(graph, null);
@@ -53,12 +45,11 @@ public class ProcessEngineTests
     @Test
     public void testOnlyConditionWithDataBadEnding() throws Exception
     {
-        System.out.println("* TEST: testOnlyConditionWithDataBadEnding");
         HermesProcess process = newProcess("simple-process-1", "only-condition-with-data");
         var node = process.getNodes().get(0);
         node.setNumberOfVariables(1);
         HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
-        node.setNumberOfVariables(null);
+        node.setNumberOfVariables(0);
 
         final int res = nextTasks(graph, Collections.singletonMap("my-value", 1));
 
@@ -68,12 +59,11 @@ public class ProcessEngineTests
     @Test
     public void testConditionAndForwardWithDataBadEnding() throws Exception
     {
-        System.out.println("* TEST: testConditionAndForwardWithDataBadEnding");
         HermesProcess process = newProcess("simple-process-1", "condition-and-forward-with-data");
         var node = process.getNodes().get(0);
         node.setNumberOfVariables(1);
         HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
-        node.setNumberOfVariables(null);
+        node.setNumberOfVariables(0);
 
         final int res = nextTasks(graph, Collections.singletonMap("my-value", 1));
 
@@ -83,7 +73,6 @@ public class ProcessEngineTests
     @Test
     public void testInvalidVariables() throws Exception
     {
-        System.out.println("* TEST: testInvalidVariables");
         HermesProcess process = newProcess("simple-process-1", "only-condition-no-data");
         HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
 
@@ -95,7 +84,6 @@ public class ProcessEngineTests
     @Test
     public void testLockRejectedWhenIncorrectTaskIdxParameter() throws Exception
     {
-        System.out.println("* TEST: testLockRejectedWhenIncorrectTaskIdxParameter");
         HermesProcess process = newProcess("simple-process-1", "only-condition-no-data");
         HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
 
@@ -107,7 +95,6 @@ public class ProcessEngineTests
     @Test
     public void testCompleteEndingTaskResultsInGoodEnding() throws Exception
     {
-        System.out.println("* TEST: testCompleteEndingTaskResultsInGoodEnding");
         HermesProcess process = newProcess("simple-process-1", "only-condition-no-data");
         HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
 
@@ -122,7 +109,6 @@ public class ProcessEngineTests
     @Test
     public void tesGetCurrentTasksAfterEndingResultsInEmptyList() throws Exception
     {
-        System.out.println("* TEST: tesGetCurrentTasksAfterEndingResultsInEmptyList");
         HermesProcess process = newProcess("simple-process-1", "only-condition-no-data");
         HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
 
@@ -132,5 +118,64 @@ public class ProcessEngineTests
         final List<ITask> nextNodes = graph.getCurrentTasks();
 
         Assert.assertTrue(nextNodes.isEmpty());
+    }
+
+    @Test
+    public void testSimpleForkJoinShouldWork() throws Exception
+    {
+        HermesProcess process = newProcess("simple-process-1", "simple-fork-join");
+        HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
+        List<ITask> nextNodes;
+        int result;
+
+        // task 1
+        nextNodes = graph.getCurrentTasks();
+        result = graph.completeTask(nextNodes.get(0).getIdx());
+        Assert.assertEquals(HermesGraph.SUCCESS, result);
+
+        // tasks 2 and 7
+        nextNodes = graph.getCurrentTasks();
+        Assert.assertEquals(2, nextNodes.size());
+
+        result = graph.completeTask(nextNodes.get(0).getIdx());
+        Assert.assertEquals(HermesGraph.SUCCESS, result);
+
+        // task 2 or 7
+        nextNodes = graph.getCurrentTasks();
+        Assert.assertEquals(1, nextNodes.size());
+
+        result = graph.completeTask(nextNodes.get(0).getIdx());
+        Assert.assertEquals(HermesGraph.SUCCESS, result);
+
+        // tasks 4
+        nextNodes = graph.getCurrentTasks();
+        Assert.assertEquals(1, nextNodes.size());
+
+        result = graph.completeTask(nextNodes.get(0).getIdx());
+        Assert.assertEquals(HermesGraph.GOOD_ENDING, result);
+    }
+
+    @Test
+    public void testStalemateShouldReturnStalemateEnding() throws Exception
+    {
+        HermesProcess process = newProcess("simple-process-1", "stalemate-fork-join-forward");
+        var node = process.getNodes().get(6); // id_7
+        node.setNumberOfVariables(1);
+        HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
+        node.setNumberOfVariables(0);
+        List<ITask> nextNodes;
+        int result;
+
+        // task 1
+        nextNodes = graph.getCurrentTasks();
+        result = graph.completeTask(nextNodes.get(0).getIdx());
+        Assert.assertEquals(HermesGraph.SUCCESS, result);
+
+        // task 7
+        nextNodes = graph.getCurrentTasks();
+        Assert.assertEquals(1, nextNodes.size());
+
+        result = graph.completeTask(nextNodes.get(0).getIdx(), Collections.singletonMap("not_one", "two"));
+        Assert.assertEquals(HermesGraph.STALEMATE_ENDING, result);
     }
 }

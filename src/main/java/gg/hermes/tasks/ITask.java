@@ -5,7 +5,20 @@ public interface ITask {
     String getId();
     String getName();
     String getDescription();
-    TaskType getType();
-    Integer getNumberOfVariables();
-    Boolean isGoodEnding();
+
+    default TaskType getType() {
+        return null;
+    }
+
+    default int getNumberOfVariables() {
+        return 0;
+    }
+
+    default boolean isGoodEnding() {
+        return false;
+    }
+
+    default int getArchesToJoin() {
+        return 0;
+    }
 }

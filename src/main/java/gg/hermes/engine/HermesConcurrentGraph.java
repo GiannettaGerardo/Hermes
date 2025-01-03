@@ -137,7 +137,7 @@ final class HermesConcurrentGraph implements HermesGraph
         for (int i = 0; i < nodeListSize; ++i)
         {
             var task = hermesProcess.getNodes().get(i);
-            graph[i] = new GraphNode(TaskFactory.createNewTaskFrom(task, i));
+            graph[i] = new GraphNode(TaskFactory.createNewTaskFrom(task, i, hermesProcess));
             Integer numberOfVariables = graph[i].task.getNumberOfVariables();
             if (numberOfVariables != null && numberOfVariables > 0)
                 ++howManyNodeWithVariables;
@@ -250,7 +250,7 @@ final class HermesConcurrentGraph implements HermesGraph
                 currentNodeVariables.clear();
                 currentNodeVariables.putAll(variables);
             }
-            return completeMovementWithFork(currentNodeIdx);
+            return completeMovement(currentNodeIdx);
         }
         finally {
             lock.unlock();
@@ -263,57 +263,58 @@ final class HermesConcurrentGraph implements HermesGraph
      2. In case of multiple ENDINGS, the first one found takes precedence;
      3. If the process is not finished then the lock of the current pointer is reused.
      */
-    private int completeMovementWithFork(final int pointerKey) {
+    private int completeMovement(final int pointerKey) {
         int next;
         GraphNode node;
         int finalResult = SUCCESS;
         boolean lockReused = false;
         final Queue<GraphNode> nodes = new ArrayDeque<>();
 
-        moveWithFork(pointerKey, nodes);
-        if (! nodes.isEmpty())
-        {
-            while ((node = nodes.poll()) != null)
-            {
-                final ITask task = node.task;
-                next = task.getIdx();
+        move(pointerKey, nodes);
+        while ((node = nodes.poll()) != null) {
+            final ITask task = node.task;
+            next = task.getIdx();
 
-                switch (task.getType())
-                {
-                    case NORMAL:
-                        if (finalResult == SUCCESS && next != pointerKey) {
-                            if (lockReused) {
-                                lockingPointers.putIfAbsent(next, new ReentrantLock());
-                            }
-                            else {
-                                lockingPointers.putIfAbsent(next, lockingPointers.remove(pointerKey));
-                                lockReused = true;
-                            }
+            switch (task.getType()) {
+                case NORMAL:
+                    if (finalResult == SUCCESS && next != pointerKey) {
+                        if (lockReused)
+                            lockingPointers.putIfAbsent(next, new ReentrantLock());
+                        else {
+                            lockingPointers.putIfAbsent(next, lockingPointers.remove(pointerKey));
+                            lockReused = true;
                         }
-                        break;
+                    }
+                    break;
 
-                    case ENDING:
-                        if (finalResult == SUCCESS)
-                            finalResult = isEnd = task.isGoodEnding() ? GOOD_ENDING : BAD_ENDING;
-                        break;
+                case JOIN:
+                    final JoinTask joinTask = (JoinTask)task;
+                    if (joinTask.safeIncrement()) {
+                        move(next, nodes);
+                        joinTask.safeReset();
+                    }
+                    break;
 
-                    case FORWARD:
-                        moveWithFork(next, nodes);
-                        break;
+                case FORWARD:
+                    move(next, nodes);
+                    break;
 
-                    default:
-                        String error = "Invalid Task Type at run time.";
-                        log.error(error);
-                        throw new IllegalHermesProcess(error);
-                }
+                case ENDING:
+                    if (finalResult == SUCCESS)
+                        finalResult = isEnd = task.isGoodEnding() ? GOOD_ENDING : BAD_ENDING;
+                    break;
+
+                default:
+                    String error = "Invalid Task Type at run time.";
+                    log.error(error);
+                    throw new IllegalHermesProcess(error);
             }
         }
         lockingPointers.remove(pointerKey);
-        return finalResult;
+        return (lockingPointers.isEmpty() && finalResult == SUCCESS) ? STALEMATE_ENDING : finalResult;
     }
 
-    private void moveWithFork(final int from, final Queue<GraphNode> pointers)
-    {
+    private void move(final int from, final Queue<GraphNode> pointers) {
         int destination;
         for (final AbstractGraphArch arch : graph[from].arches) {
             if ((destination = arch.evaluate()) != -1)

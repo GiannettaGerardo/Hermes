@@ -8,18 +8,21 @@ public class Task implements ITask
     private TaskType type;
     private String name;
     private String description;
-    private Integer numberOfVariables;
-    private Boolean goodEnding;
+    private int numberOfVariables;
+    private boolean goodEnding;
+    private int archesToJoin;
 
     private Task() {}
 
-    private Task(String id, TaskType type, String name, String description, Integer numberOfVariables, Boolean goodEnding) {
+    public Task(String id, TaskType type, String name, String description,
+                int numberOfVariables, boolean goodEnding, int archesToJoin) {
         this.id = id;
         this.type = type;
         this.name = name;
         this.description = description;
         this.numberOfVariables = numberOfVariables;
         this.goodEnding = goodEnding;
+        this.archesToJoin = archesToJoin;
     }
 
     @Override
@@ -38,13 +41,18 @@ public class Task implements ITask
     }
 
     @Override
-    public Integer getNumberOfVariables() {
+    public int getNumberOfVariables() {
         return numberOfVariables;
     }
 
     @Override
-    public Boolean isGoodEnding() {
+    public boolean isGoodEnding() {
         return goodEnding;
+    }
+
+    @Override
+    public int getArchesToJoin() {
+        return archesToJoin;
     }
 
     @Override
@@ -73,12 +81,16 @@ public class Task implements ITask
         this.description = description;
     }
 
-    public void setNumberOfVariables(Integer numberOfVariables) {
+    public void setNumberOfVariables(int numberOfVariables) {
         this.numberOfVariables = numberOfVariables;
     }
 
-    public void setGoodEnding(Boolean goodEnding) {
+    public void setGoodEnding(boolean goodEnding) {
         this.goodEnding = goodEnding;
+    }
+
+    public void setArchesToJoin(int archesToJoin) {
+        this.archesToJoin = archesToJoin;
     }
 
     public void validate() {
@@ -86,18 +98,16 @@ public class Task implements ITask
             throw new IllegalHermesProcess("NULL or BLANK task Id.");
 
         switch (type) {
-        case NORMAL:
-            if (numberOfVariables != null && numberOfVariables < 0)
-                throw new IllegalHermesProcess("NORMAL task has LESS THAN ZERO number of variables.");
-            break;
-        case ENDING:
-            if (goodEnding == null)
-                throw new IllegalHermesProcess("NULL good ending.");
-            break;
-        case FORWARD:
-            break;
-        default:
-            throw new IllegalHermesProcess("NULL or UNRECOGNIZED task Type.");
+            case NORMAL:
+                if (numberOfVariables < 0)
+                    throw new IllegalHermesProcess("NORMAL task has LESS THAN ZERO number of variables.");
+                break;
+            case JOIN:
+                if (archesToJoin < 0)
+                    throw new IllegalHermesProcess("JOIN task has LESS THAN ZERO number of arches to join.");
+                break;
+            case FORWARD, ENDING: break;
+            default: throw new IllegalHermesProcess("NULL or UNRECOGNIZED task Type.");
         }
     }
 
@@ -108,7 +118,9 @@ public class Task implements ITask
                 ", type=" + type +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
+                ", numberOfVariables=" + numberOfVariables +
                 ", goodEnding=" + goodEnding +
+                ", archesToJoin=" + archesToJoin +
                 '}';
     }
 }

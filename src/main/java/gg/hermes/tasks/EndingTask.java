@@ -15,12 +15,7 @@ public class EndingTask extends AbstractTask
     }
 
     @Override
-    public Integer getNumberOfVariables() {
-        return null;
-    }
-
-    @Override
-    public Boolean isGoodEnding() {
+    public boolean isGoodEnding() {
         return goodEnding;
     }
 

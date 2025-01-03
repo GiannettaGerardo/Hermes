@@ -9,10 +9,8 @@
       { "id": "id_5",  "type": "ENDING", "goodEnding": true },
       { "id": "id_6",  "type": "FORWARD" },
       { "id": "id_7",  "type": "NORMAL" },
-      { "id": "id_8",  "type": "NORMAL" },
-      { "id": "id_9",  "type": "NORMAL" },
-      { "id": "id_10", "type": "NORMAL" },
-      { "id": "id_11", "type": "NORMAL" }
+      { "id": "id_8",  "type": "JOIN" },
+      { "id": "id_9",  "type": "FORWARD" }
     ],
     "arches": {
       "only-condition-no-data": [
@@ -47,37 +45,27 @@
           ]
         }
       ],
-      "hermes-process-good-1": [
-        { "src": "id_1",  "dst": "id_2"  },
-        { "src": "id_2",  "dst": "id_4"  },
-        { "src": "id_2",  "dst": "id_5"  },
-        { "src": "id_2",  "dst": "id_6"  },
-        { "src": "id_2",  "dst": "id_8"  },
-        { "src": "id_4",  "dst": "id_3"  },
-        { "src": "id_6",  "dst": "id_7"  },
-        { "src": "id_7",  "dst": "id_1"  },
-        { "src": "id_8",  "dst": "id_9"  },
-        { "src": "id_9",  "dst": "id_10" },
-        { "src": "id_9",  "dst": "id_11" },
-        { "src": "id_10", "dst": "id_8"  }
+      "simple-fork-join": [
+        { "src": "id_1", "dst": "id_2" },
+        { "src": "id_1", "dst": "id_7" },
+        { "src": "id_2", "dst": "id_8" },
+        { "src": "id_7", "dst": "id_8" },
+        { "src": "id_8", "dst": "id_4" },
+        { "src": "id_4", "dst": "id_5" }
       ],
-      "hermes-process-bad-1": [
-        { "src": "id_1",  "dst": "id_2"  },
-        { "src": "id_2",  "dst": "id_5"  },
-        { "src": "id_2",  "dst": "id_6"  },
-        { "src": "id_2",  "dst": "id_8"  },
-        { "src": "id_8",  "dst": "id_9"  },
-        { "src": "id_9",  "dst": "id_10" },
-        { "src": "id_9",  "dst": "id_11" },
-        { "src": "id_10", "dst": "id_8"  },
-        { "src": "id_11", "dst": "id_6"  }
-      ],
-      "hermes-process-bad-2": [
-        { "src": "id_1",  "dst": "id_2"  },
-        { "src": "id_2",  "dst": "id_5"  },
-        { "src": "id_2",  "dst": "id_6"  },
-        { "src": "id_2",  "dst": "id_8"  },
-        { "src": "id_6",  "dst": "id_5"  }
+      "stalemate-fork-join-forward": [
+        { "src": "id_1", "dst": "id_6" },
+        { "src": "id_1", "dst": "id_7" },
+        { "src": "id_6", "dst": "id_8" },
+        { "src": "id_7", "dst": "id_8" },
+        { "src": "id_8", "dst": "id_9" },
+        {
+          "src": "id_9",
+          "conditions": [
+            { "dst": "id_5", "IF": "{ \"===\": [{ \"var\": \"id_7.not_one\" }, \"one\"] }" },
+            { "dst": "id_8" }
+          ]
+        }
       ]
     }
   }

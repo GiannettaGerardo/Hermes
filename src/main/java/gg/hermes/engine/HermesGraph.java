@@ -12,6 +12,7 @@ public interface HermesGraph
     int LOCK_REJECTED = 0;
     int SUCCESS = 1;
     int INVALID_VARIABLES = 2;
+    int STALEMATE_ENDING = 3;
 
     List<ITask> getCurrentTasks();
     int completeTask(int taskIdx);

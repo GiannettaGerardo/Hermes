@@ -12,16 +12,6 @@ public class ForwardTask extends AbstractTask
     }
 
     @Override
-    public Integer getNumberOfVariables() {
-        return null;
-    }
-
-    @Override
-    public Boolean isGoodEnding() {
-        return null;
-    }
-
-    @Override
     public String toString() {
         return "ForwardTask{" +
                 "idx=" + idx +
