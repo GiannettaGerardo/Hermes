@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public record ModularHermesProcess(
-        String startingNodeId,
+        int startingNodeId,
         List<Task> nodes,
         Map<String, List<Arch>> arches
 ) {

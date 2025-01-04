@@ -124,10 +124,8 @@ final class HermesConcurrentGraph implements HermesGraph
 
         createArches(hermesProcess);
 
-        final int startingNodeIdx = getNodeIdxFromId(hermesProcess.getStartingNodeId());
-
         lockingPointers = new ConcurrentHashMap<>();
-        lockingPointers.put(startingNodeIdx, new ReentrantLock());
+        lockingPointers.put(hermesProcess.getStartingNodeId(), new ReentrantLock());
     }
 
     private int createGraphNodes(HermesProcess hermesProcess)
@@ -138,8 +136,7 @@ final class HermesConcurrentGraph implements HermesGraph
         {
             var task = hermesProcess.getNodes().get(i);
             graph[i] = new GraphNode(TaskFactory.createNewTaskFrom(task, i, hermesProcess));
-            Integer numberOfVariables = graph[i].task.getNumberOfVariables();
-            if (numberOfVariables != null && numberOfVariables > 0)
+            if (graph[i].task.getNumberOfVariables() > 0)
                 ++howManyNodeWithVariables;
         }
         return howManyNodeWithVariables;
@@ -147,10 +144,10 @@ final class HermesConcurrentGraph implements HermesGraph
 
     private void initializeGraphVariables()
     {
+        int nv;
         for (GraphNode node : graph) {
-            Integer nv;
-            if ((nv = node.task.getNumberOfVariables()) != null && nv > 0) {
-                graphVariables.put(node.task.getId(), new HashMap<>(nv));
+            if ((nv = node.task.getNumberOfVariables()) > 0) {
+                graphVariables.put(node.task.getIdAsString(), new HashMap<>(nv));
             }
         }
     }
@@ -159,7 +156,7 @@ final class HermesConcurrentGraph implements HermesGraph
     {
         try {
             for (final Arch arch : hermesProcess.getArches()) {
-                final int sourceIdx = getNodeIdxFromId(arch.src());
+                final int sourceIdx = arch.src();
                 if (graph[sourceIdx].arches == null) {
                     graph[sourceIdx].arches = new ArrayList<>();
                 }
@@ -171,12 +168,12 @@ final class HermesConcurrentGraph implements HermesGraph
                     ConditionalGraphArch cga = (ConditionalGraphArch) newArch;
                     for (var conditionArch : conditions) {
                         cga.addCondition(
-                                getNodeIdxFromId(conditionArch.dst()),
+                                conditionArch.dst(),
                                 conditionArch.IF() != null ? JsonLogicParser.parse(conditionArch.IF()) : null
                         );
                     }
                 } else {
-                    newArch = new GraphArch(sourceIdx, getNodeIdxFromId(arch.dst()));
+                    newArch = new GraphArch(sourceIdx, arch.dst());
                 }
 
                 graph[sourceIdx].arches.add(newArch);
@@ -187,24 +184,11 @@ final class HermesConcurrentGraph implements HermesGraph
         }
     }
 
-    private int getNodeIdxFromId(final String id)
-    {
-        final int size = graph.length;
-        for (int i = 0; i < size; ++i) {
-            if (graph[i].task.getId().equals(id))
-                return i;
-        }
-        throw new IllegalHermesProcess("Node ID " + id + " not found.");
-    }
-
-    private boolean areExternalVariablesValid(final int currentNodeIdx, final Map<String, Object> variables) {
-        Integer nv = graph[currentNodeIdx].task.getNumberOfVariables();
-        if (nv == null || nv <= 0) {
-            return variables == null || variables.isEmpty();
-        }
-        return variables != null && variables.size() == nv;
-    }
-
+    /**
+     * Returns the reference of currently active tasks to complete.
+     * Never returns tasks of type {@code FORWARD}, {@code JOIN} and {@code ENDING}.
+     * @return reference of currently active tasks.
+     */
     @Override
     public List<ITask> getCurrentTasks()
     {
@@ -220,28 +204,31 @@ final class HermesConcurrentGraph implements HermesGraph
     }
 
     @Override
-    public int completeTask(final int currentNodeIdx) {
-        return completeTask(currentNodeIdx, null);
+    public int completeTask(final int currentNodeId) {
+        return completeTask(currentNodeId, null);
     }
 
     @Override
-    public int completeTask(final int currentNodeIdx, final Map<String, Object> variables)
+    public int completeTask(final int currentNodeId, final Map<String, Object> variables)
     {
         if (isEnd < 0) return isEnd;
 
-        final Lock lock = lockingPointers.get(currentNodeIdx);
+        final Lock lock = lockingPointers.get(currentNodeId);
         if (lock == null)
             return LOCK_REJECTED;
 
-        if (! areExternalVariablesValid(currentNodeIdx, variables))
-            return INVALID_VARIABLES;
-
-        final GraphNode currentNode = graph[currentNodeIdx];
-
+        final GraphNode currentNode = graph[currentNodeId];
         Map<String, Object> currentNodeVariables = null;
-        if (variables != null && !variables.isEmpty()) {
-            currentNodeVariables = graphVariables.get(currentNode.task.getId());
+
+        final int nv = currentNode.task.getNumberOfVariables();
+        if (nv == 0) {
+            if (variables != null && !variables.isEmpty())
+                return INVALID_VARIABLES;
         }
+        else if (variables != null && variables.size() == nv) {
+            currentNodeVariables = graphVariables.get(currentNode.task.getIdAsString());
+        }
+        else return INVALID_VARIABLES;
 
         if (! lock.tryLock())
             return LOCK_REJECTED;
@@ -250,7 +237,7 @@ final class HermesConcurrentGraph implements HermesGraph
                 currentNodeVariables.clear();
                 currentNodeVariables.putAll(variables);
             }
-            return completeMovement(currentNodeIdx);
+            return completeMovement(currentNodeId);
         }
         finally {
             lock.unlock();
@@ -273,7 +260,7 @@ final class HermesConcurrentGraph implements HermesGraph
         move(pointerKey, nodes);
         while ((node = nodes.poll()) != null) {
             final ITask task = node.task;
-            next = task.getIdx();
+            next = task.getId();
 
             switch (task.getType()) {
                 case NORMAL:

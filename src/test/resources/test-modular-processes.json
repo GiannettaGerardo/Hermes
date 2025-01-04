@@ -1,69 +1,69 @@
 {
   "simple-process-1": {
-    "startingNodeId": "id_1",
+    "startingNodeId": 0,
     "nodes": [
-      { "id": "id_1",  "type": "NORMAL" },
-      { "id": "id_2",  "type": "NORMAL" },
-      { "id": "id_3",  "type": "ENDING", "goodEnding": false },
-      { "id": "id_4",  "type": "NORMAL" },
-      { "id": "id_5",  "type": "ENDING", "goodEnding": true },
-      { "id": "id_6",  "type": "FORWARD" },
-      { "id": "id_7",  "type": "NORMAL" },
-      { "id": "id_8",  "type": "JOIN" },
-      { "id": "id_9",  "type": "FORWARD" }
+      { "name": 0, "type": "NORMAL" },
+      { "name": 1, "type": "NORMAL" },
+      { "name": 2, "type": "ENDING", "goodEnding": false },
+      { "name": 3, "type": "NORMAL" },
+      { "name": 4, "type": "ENDING", "goodEnding": true },
+      { "name": 5, "type": "FORWARD" },
+      { "name": 6, "type": "NORMAL" },
+      { "name": 7, "type": "JOIN" },
+      { "name": 8, "type": "FORWARD" }
     ],
     "arches": {
       "only-condition-no-data": [
-        { "src": "id_1", "conditions": [{ "dst": "id_4", "IF": "{ \"===\": [1, 1] }" }] },
-        { "src": "id_1", "conditions": [{ "dst": "id_3", "IF": "{ \"===\": [1, 2] }" }] },
-        { "src": "id_4", "dst": "id_5" }
+        { "src": 0, "conditions": [{ "dst": 3, "IF": "{ \"===\": [1, 1] }" }] },
+        { "src": 0, "conditions": [{ "dst": 2, "IF": "{ \"===\": [1, 2] }" }] },
+        { "src": 3, "dst": 4 }
       ],
       "only-condition-with-data": [
         {
-          "src": "id_1",
+          "src": 0,
           "conditions": [
-            { "dst": "id_4", "IF": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }" },
-            { "dst": "id_3" }
+            { "dst": 3, "IF": "{ \"!==\": [{ \"var\": \"0.my-value\" }, 1] }" },
+            { "dst": 2 }
           ]
         },
-        { "src": "id_4", "dst": "id_5" }
+        { "src": 3, "dst": 4 }
       ],
       "condition-and-forward-with-data": [
         {
-          "src": "id_1",
+          "src": 0,
           "conditions": [
-            { "dst": "id_4", "IF": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }" },
-            { "dst": "id_6" }
+            { "dst": 3, "IF": "{ \"!==\": [{ \"var\": \"0.my-value\" }, 1] }" },
+            { "dst": 5 }
           ]
         },
-        { "src": "id_4", "dst": "id_5" },
+        { "src": 3, "dst": 4 },
         {
-          "src": "id_6",
+          "src": 5,
           "conditions": [
-            { "dst": "id_4", "IF": "{ \"!==\": [{ \"var\": \"id_1.my-value\" }, 1] }" },
-            { "dst": "id_3" }
+            { "dst": 3, "IF": "{ \"!==\": [{ \"var\": \"0.my-value\" }, 1] }" },
+            { "dst": 2 }
           ]
         }
       ],
       "simple-fork-join": [
-        { "src": "id_1", "dst": "id_2" },
-        { "src": "id_1", "dst": "id_7" },
-        { "src": "id_2", "dst": "id_8" },
-        { "src": "id_7", "dst": "id_8" },
-        { "src": "id_8", "dst": "id_4" },
-        { "src": "id_4", "dst": "id_5" }
+        { "src": 0, "dst": 1 },
+        { "src": 0, "dst": 6 },
+        { "src": 1, "dst": 7 },
+        { "src": 6, "dst": 7 },
+        { "src": 7, "dst": 3 },
+        { "src": 3, "dst": 4 }
       ],
       "stalemate-fork-join-forward": [
-        { "src": "id_1", "dst": "id_6" },
-        { "src": "id_1", "dst": "id_7" },
-        { "src": "id_6", "dst": "id_8" },
-        { "src": "id_7", "dst": "id_8" },
-        { "src": "id_8", "dst": "id_9" },
+        { "src": 0, "dst": 5 },
+        { "src": 0, "dst": 6 },
+        { "src": 5, "dst": 7 },
+        { "src": 6, "dst": 7 },
+        { "src": 7, "dst": 8 },
         {
-          "src": "id_9",
+          "src": 8,
           "conditions": [
-            { "dst": "id_5", "IF": "{ \"===\": [{ \"var\": \"id_7.not_one\" }, \"one\"] }" },
-            { "dst": "id_8" }
+            { "dst": 4, "IF": "{ \"===\": [{ \"var\": \"6.not_one\" }, \"one\"] }" },
+            { "dst": 7 }
           ]
         }
       ]

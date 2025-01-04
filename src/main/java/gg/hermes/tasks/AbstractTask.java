@@ -2,25 +2,18 @@ package gg.hermes.tasks;
 
 abstract class AbstractTask implements ITask
 {
-    protected int idx;
-    protected final String id;
+    protected final int id;
     protected final String name;
     protected final String description;
 
-    protected AbstractTask(final ITask from, final int idx) {
-        this.idx = idx;
-        id = from.getId();
+    protected AbstractTask(final ITask from, final int id) {
+        this.id = id;
         name = from.getName();
         description = from.getDescription();
     }
 
     @Override
-    public int getIdx() {
-        return idx;
-    }
-
-    @Override
-    public String getId() {
+    public int getId() {
         return id;
     }
 

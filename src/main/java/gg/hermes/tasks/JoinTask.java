@@ -8,11 +8,11 @@ public class JoinTask extends AbstractTask
     private final int archesToJoin;
     private final AtomicInteger waitingPointers;
 
-    public JoinTask(final ITask from, final int idx, final List<Arch> arches) {
-        super(from, idx);
+    public JoinTask(final ITask from, final int id, final List<Arch> arches) {
+        super(from, id);
 
         archesToJoin = from.getArchesToJoin() <= 0
-                ? (int) arches.stream().filter(arch -> id.equals(arch.dst())).count()
+                ? (int) arches.stream().filter(arch -> this.id == arch.dst()).count()
                 : from.getArchesToJoin();
 
         waitingPointers = new AtomicInteger(0);
@@ -43,8 +43,7 @@ public class JoinTask extends AbstractTask
     @Override
     public String toString() {
         return "JoinTask{" +
-                "idx=" + idx +
-                ", id='" + id + '\'' +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", archesToJoin=" + archesToJoin +

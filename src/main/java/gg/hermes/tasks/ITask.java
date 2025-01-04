@@ -1,10 +1,13 @@
 package gg.hermes.tasks;
 
 public interface ITask {
-    int getIdx();
-    String getId();
+    int getId();
     String getName();
     String getDescription();
+
+    default String getIdAsString() {
+        return null;
+    }
 
     default TaskType getType() {
         return null;

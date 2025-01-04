@@ -20,7 +20,7 @@ public class ProcessEngineTests
 
     public static int nextTasks(HermesGraph graph, Map<String, Object> variables) {
         List<ITask> nextNodes = graph.getCurrentTasks();
-        return graph.completeTask(nextNodes.get(0).getIdx(), variables);
+        return graph.completeTask(nextNodes.get(0).getId(), variables);
     }
 
     public static HermesProcess newProcess(String processName, String archesModuleName) {
@@ -130,28 +130,28 @@ public class ProcessEngineTests
 
         // task 1
         nextNodes = graph.getCurrentTasks();
-        result = graph.completeTask(nextNodes.get(0).getIdx());
+        result = graph.completeTask(nextNodes.get(0).getId());
         Assert.assertEquals(HermesGraph.SUCCESS, result);
 
         // tasks 2 and 7
         nextNodes = graph.getCurrentTasks();
         Assert.assertEquals(2, nextNodes.size());
 
-        result = graph.completeTask(nextNodes.get(0).getIdx());
+        result = graph.completeTask(nextNodes.get(0).getId());
         Assert.assertEquals(HermesGraph.SUCCESS, result);
 
         // task 2 or 7
         nextNodes = graph.getCurrentTasks();
         Assert.assertEquals(1, nextNodes.size());
 
-        result = graph.completeTask(nextNodes.get(0).getIdx());
+        result = graph.completeTask(nextNodes.get(0).getId());
         Assert.assertEquals(HermesGraph.SUCCESS, result);
 
         // tasks 4
         nextNodes = graph.getCurrentTasks();
         Assert.assertEquals(1, nextNodes.size());
 
-        result = graph.completeTask(nextNodes.get(0).getIdx());
+        result = graph.completeTask(nextNodes.get(0).getId());
         Assert.assertEquals(HermesGraph.GOOD_ENDING, result);
     }
 
@@ -168,14 +168,14 @@ public class ProcessEngineTests
 
         // task 1
         nextNodes = graph.getCurrentTasks();
-        result = graph.completeTask(nextNodes.get(0).getIdx());
+        result = graph.completeTask(nextNodes.get(0).getId());
         Assert.assertEquals(HermesGraph.SUCCESS, result);
 
         // task 7
         nextNodes = graph.getCurrentTasks();
         Assert.assertEquals(1, nextNodes.size());
 
-        result = graph.completeTask(nextNodes.get(0).getIdx(), Collections.singletonMap("not_one", "two"));
+        result = graph.completeTask(nextNodes.get(0).getId(), Collections.singletonMap("not_one", "two"));
         Assert.assertEquals(HermesGraph.STALEMATE_ENDING, result);
     }
 }

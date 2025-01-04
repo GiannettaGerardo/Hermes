@@ -7,12 +7,12 @@ public final class TaskFactory
 {
     private TaskFactory() {}
 
-    public static ITask createNewTaskFrom(ITask task, int idx, HermesProcess process) {
+    public static ITask createNewTaskFrom(ITask task, int id, HermesProcess process) {
         switch (task.getType()) {
-            case NORMAL: return new NormalTask(task, idx);
-            case ENDING: return new EndingTask(task, idx);
-            case FORWARD: return new ForwardTask(task, idx);
-            case JOIN: return new JoinTask(task, idx, process.getArches());
+            case NORMAL: return new NormalTask(task, id);
+            case ENDING: return new EndingTask(task, id);
+            case FORWARD: return new ForwardTask(task, id);
+            case JOIN: return new JoinTask(task, id, process.getArches());
             default: throw new IllegalHermesProcess("Illegal Task Type not found.");
         }
     }

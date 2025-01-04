@@ -2,8 +2,8 @@ package gg.hermes.tasks;
 
 public class ForwardTask extends AbstractTask
 {
-    public ForwardTask(final ITask from, final int idx) {
-        super(from, idx);
+    public ForwardTask(final ITask from, final int id) {
+        super(from, id);
     }
 
     @Override
@@ -14,8 +14,7 @@ public class ForwardTask extends AbstractTask
     @Override
     public String toString() {
         return "ForwardTask{" +
-                "idx=" + idx +
-                ", id='" + id + '\'' +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 '}';

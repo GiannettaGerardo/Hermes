@@ -4,8 +4,8 @@ public class EndingTask extends AbstractTask
 {
     private final Boolean goodEnding;
 
-    public EndingTask(final ITask from, final int idx) {
-        super(from, idx);
+    public EndingTask(final ITask from, final int id) {
+        super(from, id);
         goodEnding = from.isGoodEnding();
     }
 
@@ -22,8 +22,7 @@ public class EndingTask extends AbstractTask
     @Override
     public String toString() {
         return "EndingTask{" +
-                "idx=" + idx +
-                ", id='" + id + '\'' +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", goodEnding=" + goodEnding +

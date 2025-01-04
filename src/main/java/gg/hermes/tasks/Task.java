@@ -4,7 +4,6 @@ import gg.hermes.exception.IllegalHermesProcess;
 
 public class Task implements ITask
 {
-    private String id;
     private TaskType type;
     private String name;
     private String description;
@@ -14,9 +13,8 @@ public class Task implements ITask
 
     private Task() {}
 
-    public Task(String id, TaskType type, String name, String description,
+    public Task(TaskType type, String name, String description,
                 int numberOfVariables, boolean goodEnding, int archesToJoin) {
-        this.id = id;
         this.type = type;
         this.name = name;
         this.description = description;
@@ -26,13 +24,8 @@ public class Task implements ITask
     }
 
     @Override
-    public int getIdx() {
+    public int getId() {
         return -1;
-    }
-
-    @Override
-    public String getId() {
-        return id;
     }
 
     @Override
@@ -65,10 +58,6 @@ public class Task implements ITask
         return description;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public void setType(TaskType type) {
         this.type = type;
     }
@@ -94,9 +83,6 @@ public class Task implements ITask
     }
 
     public void validate() {
-        if (id == null || id.isBlank())
-            throw new IllegalHermesProcess("NULL or BLANK task Id.");
-
         switch (type) {
             case NORMAL:
                 if (numberOfVariables < 0)
@@ -114,8 +100,7 @@ public class Task implements ITask
     @Override
     public String toString() {
         return "Task{" +
-                "id='" + id + '\'' +
-                ", type=" + type +
+                "type=" + type +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", numberOfVariables=" + numberOfVariables +
