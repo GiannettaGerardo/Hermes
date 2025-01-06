@@ -26,40 +26,22 @@ final class HermesConcurrentGraph implements HermesGraph
             this.task = task;
             arches = null;
         }
-
-        boolean isEnding() {
-            return TaskType.ENDING == task.getType();
-        }
     }
 
-    private abstract static class AbstractGraphArch {
-        final int source;
-
-        AbstractGraphArch(int source) {
-            this.source = source;
-        }
-
-        abstract int evaluate();
+    private interface AbstractGraphArch {
+        int evaluate();
     }
 
-    private static class GraphArch extends AbstractGraphArch {
-        final int destination;
-
-        GraphArch(int source, int destination) {
-            super(source);
-            this.destination = destination;
-        }
-
-        int evaluate() {
+    private record GraphArch(int destination) implements AbstractGraphArch {
+        public int evaluate() {
             return destination;
         }
     }
 
-    private class ConditionalGraphArch extends AbstractGraphArch {
+    private class ConditionalGraphArch implements AbstractGraphArch {
         final List<ConditionArch> conditions;
 
-        ConditionalGraphArch(int source, int conditionListSize) {
-            super(source);
+        ConditionalGraphArch(int conditionListSize) {
             this.conditions = new ArrayList<>(conditionListSize);
         }
 
@@ -67,7 +49,7 @@ final class HermesConcurrentGraph implements HermesGraph
             conditions.add(new ConditionArch(destination, condition));
         }
 
-        int evaluate() {
+        public int evaluate() {
             for (var condition : conditions) {
                 if (condition.evaluate())
                     return condition.destination;
@@ -93,8 +75,7 @@ final class HermesConcurrentGraph implements HermesGraph
                 catch (JsonLogicException | ClassCastException e) {
                     log.error(e.getMessage());
                     throw new IllegalHermesProcess(
-                            String.format("Condition of Arch (%s, %s) is not a correct Json Logic Expression.",
-                                    graph[source].task.getId(), graph[destination].task.getId()));
+                            String.format("Condition of Arch to node %d is not a correct Json Logic Expression.", destination));
                 }
             }
         }
@@ -164,7 +145,7 @@ final class HermesConcurrentGraph implements HermesGraph
                 AbstractGraphArch newArch;
                 List<Arch.ConditionArch> conditions;
                 if ((conditions = arch.conditions()) != null) {
-                    newArch = new ConditionalGraphArch(sourceIdx, conditions.size());
+                    newArch = new ConditionalGraphArch(conditions.size());
                     ConditionalGraphArch cga = (ConditionalGraphArch) newArch;
                     for (var conditionArch : conditions) {
                         cga.addCondition(
@@ -173,7 +154,7 @@ final class HermesConcurrentGraph implements HermesGraph
                         );
                     }
                 } else {
-                    newArch = new GraphArch(sourceIdx, arch.dst());
+                    newArch = new GraphArch(arch.dst());
                 }
 
                 graph[sourceIdx].arches.add(newArch);
@@ -196,10 +177,8 @@ final class HermesConcurrentGraph implements HermesGraph
             return Collections.emptyList();
 
         final List<ITask> tasks = new ArrayList<>(lockingPointers.size());
-        for (int ptr : lockingPointers.keySet()) {
-            if (! graph[ptr].isEnding())
-                tasks.add(graph[ptr].task);
-        }
+        for (int ptr : lockingPointers.keySet())
+            tasks.add(graph[ptr].task);
         return tasks;
     }
 
