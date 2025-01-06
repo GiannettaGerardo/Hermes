@@ -5,10 +5,6 @@ public interface ITask {
     String getName();
     String getDescription();
 
-    default String getIdAsString() {
-        return null;
-    }
-
     default TaskType getType() {
         return null;
     }

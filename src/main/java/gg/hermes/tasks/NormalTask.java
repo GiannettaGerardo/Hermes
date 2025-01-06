@@ -11,7 +11,6 @@ public class NormalTask extends AbstractTask
         idAsString = (numberOfVariables > 0) ? Integer.toString(id) : null;
     }
 
-    @Override
     public String getIdAsString() {
         return idAsString;
     }

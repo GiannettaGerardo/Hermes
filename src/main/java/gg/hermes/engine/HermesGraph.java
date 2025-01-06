@@ -11,8 +11,7 @@ public interface HermesGraph
     int BAD_ENDING = -11;
     int LOCK_REJECTED = 0;
     int SUCCESS = 1;
-    int INVALID_VARIABLES = 2;
-    int STALEMATE_ENDING = 3;
+    int STALEMATE_ENDING = 2;
 
     /**
      * Returns currently active tasks to complete.
@@ -29,8 +28,6 @@ public interface HermesGraph
      *     <li>{@code LOCK_REJECTED}: the attempt to obtain the lock for this task id failed
      *     or there is no 'taskId' in the currently active tasks;</li>
      *     <li>{@code SUCCESS}: the task has been completed and the process has advanced;</li>
-     *     <li>{@code INVALID_VARIABLES}: 'variables' is invalid or the task with
-     *     the given id does not allow variables;</li>
      *     <li>{@code STALEMATE_ENDING}: the process did not terminate with an ENDING task but is stuck in a state
      *     from which it is no longer possible to exit. The process construction should probably be revised;</li>
      *     <li>{@code GOOD_ENDING}: the process ended with a good ENDING task;</li>
@@ -42,14 +39,13 @@ public interface HermesGraph
     /**
      * Complete the task with id {@code taskId} and advance through the process.
      * @param taskId the task id of a current task.
-     * @param variables variables to save for this task (if the task allows them).
+     * @param variables variables to save for this task (if the task allows them and the number of variables
+     *                  are less or equals the expected number for this task, otherwise the variables will be ignored).
      * @return a code that represent the result:
      * <ul>
      *     <li>{@code LOCK_REJECTED}: the attempt to obtain the lock for this task id failed
      *     or there is no 'taskId' in the currently active tasks;</li>
      *     <li>{@code SUCCESS}: the task has been completed and the process has advanced;</li>
-     *     <li>{@code INVALID_VARIABLES}: 'variables' is invalid or the task with
-     *     the given id does not allow variables;</li>
      *     <li>{@code STALEMATE_ENDING}: the process did not terminate with an ENDING task but is stuck in a state
      *     from which it is no longer possible to exit. The process construction should probably be revised;</li>
      *     <li>{@code GOOD_ENDING}: the process ended with a good ENDING task;</li>

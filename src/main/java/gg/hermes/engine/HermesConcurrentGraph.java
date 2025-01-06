@@ -125,11 +125,9 @@ final class HermesConcurrentGraph implements HermesGraph
 
     private void initializeGraphVariables()
     {
-        int nv;
         for (GraphNode node : graph) {
-            if ((nv = node.task.getNumberOfVariables()) > 0) {
-                graphVariables.put(node.task.getIdAsString(), new HashMap<>(nv));
-            }
+            if (node.task instanceof NormalTask nTask && nTask.getNumberOfVariables() > 0)
+                graphVariables.put(nTask.getIdAsString(), new HashMap<>(nTask.getNumberOfVariables()));
         }
     }
 
@@ -199,15 +197,13 @@ final class HermesConcurrentGraph implements HermesGraph
         final GraphNode currentNode = graph[currentNodeId];
         Map<String, Object> currentNodeVariables = null;
 
-        final int nv = currentNode.task.getNumberOfVariables();
-        if (nv == 0) {
-            if (variables != null && !variables.isEmpty())
-                return INVALID_VARIABLES;
+        int nv;
+        if (currentNode.task instanceof NormalTask nTask
+            && (nv = nTask.getNumberOfVariables()) > 0
+            && variables != null && variables.size() <= nv
+        ) {
+            currentNodeVariables = graphVariables.get(nTask.getIdAsString());
         }
-        else if (variables != null && variables.size() == nv) {
-            currentNodeVariables = graphVariables.get(currentNode.task.getIdAsString());
-        }
-        else return INVALID_VARIABLES;
 
         if (! lock.tryLock())
             return LOCK_REJECTED;

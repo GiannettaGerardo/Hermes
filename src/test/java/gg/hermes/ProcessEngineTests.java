@@ -71,17 +71,6 @@ public class ProcessEngineTests
     }
 
     @Test
-    public void testInvalidVariables() throws Exception
-    {
-        HermesProcess process = newProcess("simple-process-1", "only-condition-no-data");
-        HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
-
-        int res = nextTasks(graph, Collections.singletonMap("my-value", 1));
-
-        Assert.assertEquals(HermesGraph.INVALID_VARIABLES, res);
-    }
-
-    @Test
     public void testLockRejectedWhenIncorrectTaskIdxParameter() throws Exception
     {
         HermesProcess process = newProcess("simple-process-1", "only-condition-no-data");
