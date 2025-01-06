@@ -26,7 +26,8 @@ public interface HermesGraph
      * @param taskId the task id of a current task.
      * @return a code that represent the result:
      * <ul>
-     *     <li>{@code LOCK_REJECTED}: the attempt to obtain the lock for this task id failed;</li>
+     *     <li>{@code LOCK_REJECTED}: the attempt to obtain the lock for this task id failed
+     *     or there is no 'taskId' in the currently active tasks;</li>
      *     <li>{@code SUCCESS}: the task has been completed and the process has advanced;</li>
      *     <li>{@code INVALID_VARIABLES}: 'variables' is invalid or the task with
      *     the given id does not allow variables;</li>
@@ -44,7 +45,8 @@ public interface HermesGraph
      * @param variables variables to save for this task (if the task allows them).
      * @return a code that represent the result:
      * <ul>
-     *     <li>{@code LOCK_REJECTED}: the attempt to obtain the lock for this task id failed;</li>
+     *     <li>{@code LOCK_REJECTED}: the attempt to obtain the lock for this task id failed
+     *     or there is no 'taskId' in the currently active tasks;</li>
      *     <li>{@code SUCCESS}: the task has been completed and the process has advanced;</li>
      *     <li>{@code INVALID_VARIABLES}: 'variables' is invalid or the task with
      *     the given id does not allow variables;</li>
