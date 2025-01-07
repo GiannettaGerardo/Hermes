@@ -91,7 +91,7 @@ public class HermesNode
 
     public void validate(final int id) {
         switch (type) {
-            case NORMAL:
+            case TASK:
                 if (numberOfVariables < 0)
                     throw new IllegalHermesProcess("NORMAL node has LESS THAN ZERO number of variables.");
                 break;

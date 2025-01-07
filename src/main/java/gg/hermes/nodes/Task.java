@@ -17,7 +17,7 @@ public class Task extends AbstractHermesNode
 
     @Override
     public HermesNodeType getType() {
-        return HermesNodeType.NORMAL;
+        return HermesNodeType.TASK;
     }
 
     @Override

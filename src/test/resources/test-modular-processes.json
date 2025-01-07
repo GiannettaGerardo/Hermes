@@ -3,7 +3,7 @@
     "processName": "only-condition-no-data",
     "process": [
       {
-        "name": "id_0", "type": "NORMAL",
+        "name": "id_0", "type": "TASK",
         "to": [
           { "conditions": [{ "dst": 2, "IF": "{ \"===\": [1, 1] }" }] },
           { "conditions": [{ "dst": 1, "IF": "{ \"===\": [1, 2] }" }] }
@@ -11,7 +11,7 @@
       },
       { "name": "id_1", "type": "ENDING", "goodEnding": false },
       {
-        "name": "id_2", "type": "NORMAL",
+        "name": "id_2", "type": "TASK",
         "to": [{ "dst": 3 }]
       },
       { "name": "id_3", "type": "ENDING", "goodEnding": true }
@@ -22,7 +22,7 @@
     "processName": "only-condition-with-data",
     "process": [
       {
-        "name": "id_0", "type": "NORMAL", "numberOfVariables": 1,
+        "name": "id_0", "type": "TASK", "numberOfVariables": 1,
         "to": [
           {
             "conditions": [
@@ -34,7 +34,7 @@
       },
       { "name": "id_1", "type": "ENDING", "goodEnding": false },
       {
-        "name": "id_2", "type": "NORMAL",
+        "name": "id_2", "type": "TASK",
         "to": [{ "dst": 3 }]
       },
       { "name": "id_3", "type": "ENDING", "goodEnding": true }
@@ -45,7 +45,7 @@
     "processName": "condition-and-forward-with-data",
     "process": [
       {
-        "name": "id_0", "type": "NORMAL", "numberOfVariables": 1,
+        "name": "id_0", "type": "TASK", "numberOfVariables": 1,
         "to": [
           {
             "conditions": [
@@ -57,7 +57,7 @@
       },
       { "name": "id_1", "type": "ENDING", "goodEnding": false },
       {
-        "name": "id_2", "type": "NORMAL",
+        "name": "id_2", "type": "TASK",
         "to": [{ "dst": 3 }]
       },
       { "name": "id_3", "type": "ENDING", "goodEnding": true },
@@ -76,13 +76,13 @@
   "simple-fork-join": {
     "processName": "simple-fork-join",
     "process": [
-      { "name": "id_0", "type": "NORMAL", "to": [{ "dst": 1 }, { "dst": 6 }] },
-      { "name": "id_1", "type": "NORMAL", "to": [{ "dst": 7 }] },
+      { "name": "id_0", "type": "TASK", "to": [{ "dst": 1 }, { "dst": 6 }] },
+      { "name": "id_1", "type": "TASK", "to": [{ "dst": 7 }] },
       { "name": "id_2", "type": "ENDING", "goodEnding": false },
-      { "name": "id_3", "type": "NORMAL", "to": [{ "dst": 4 }] },
+      { "name": "id_3", "type": "TASK", "to": [{ "dst": 4 }] },
       { "name": "id_4", "type": "ENDING", "goodEnding": true },
       { "name": "id_5", "type": "FORWARD" },
-      { "name": "id_6", "type": "NORMAL", "to": [{ "dst": 7 }] },
+      { "name": "id_6", "type": "TASK", "to": [{ "dst": 7 }] },
       { "name": "id_7", "type": "JOIN", "archesToJoin": 2, "to": [{ "dst": 3 }] }
     ]
   },
@@ -90,13 +90,13 @@
   "stalemate-fork-join-forward": {
     "processName": "stalemate-fork-join-forward",
     "process": [
-      { "name": "id_0", "type": "NORMAL", "to": [{ "dst": 5 }, { "dst": 6 }] },
-      { "name": "id_1", "type": "NORMAL" },
+      { "name": "id_0", "type": "TASK", "to": [{ "dst": 5 }, { "dst": 6 }] },
+      { "name": "id_1", "type": "TASK" },
       { "name": "id_2", "type": "ENDING", "goodEnding": false },
-      { "name": "id_3", "type": "NORMAL" },
+      { "name": "id_3", "type": "TASK" },
       { "name": "id_4", "type": "ENDING", "goodEnding": true },
       { "name": "id_5", "type": "FORWARD", "to": [{ "dst": 7 }] },
-      { "name": "id_6", "type": "NORMAL", "numberOfVariables": 1, "to": [{ "dst": 7 }] },
+      { "name": "id_6", "type": "TASK", "numberOfVariables": 1, "to": [{ "dst": 7 }] },
       { "name": "id_7", "type": "JOIN", "archesToJoin": 2, "to": [{ "dst": 8 }] },
       {
         "name": "id_8", "type": "FORWARD",
@@ -114,7 +114,7 @@
     "processName": "for-loop-1",
     "process": [
       {
-        "name": "id_0", "type": "NORMAL", "numberOfVariables": 1,
+        "name": "id_0", "type": "TASK", "numberOfVariables": 1,
         "to": [{
           "conditions": [
             { "dst": 0, "IF": "{ \"<\": [{ \"var\": \"0.i\" }, 3] }" },
@@ -129,7 +129,7 @@
   "for-loop-2": {
     "processName": "for-loop-2",
     "process": [
-      { "name": "id_0", "type": "NORMAL", "numberOfVariables": 1, "to": [{ "dst": 2 }] },
+      { "name": "id_0", "type": "TASK", "numberOfVariables": 1, "to": [{ "dst": 2 }] },
       { "name": "id_1", "type": "ENDING", "goodEnding": true },
       {
         "name": "id_2", "type": "FORWARD",

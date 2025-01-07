@@ -252,7 +252,7 @@ public final class HermesConcurrentGraph implements HermesGraph
             next = task.getId();
 
             switch (task.getType()) {
-                case NORMAL:
+                case TASK:
                     if (finalResult == SUCCESS) {
                         if (next != pointerKey) {
                             if (lockReused)

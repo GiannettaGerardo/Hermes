@@ -8,7 +8,7 @@ public final class HermesNodeFactory
 
     public static HermesTask createNewTaskFrom(HermesNode node, int id) {
         switch (node.getType()) {
-            case NORMAL: return new Task(node, id);
+            case TASK: return new Task(node, id);
             case ENDING: return new Ending(node, id);
             case FORWARD: return new Forward(node, id);
             case JOIN: return new Join(node, id);

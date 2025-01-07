@@ -35,7 +35,7 @@ public class HermesProcess
         if (process == null || (size = process.size()) == 0)
             throw new IllegalHermesProcess("NULL or EMPTY process list.");
 
-        if (HermesNodeType.NORMAL != process.get(0).getType())
+        if (HermesNodeType.TASK != process.get(0).getType())
             throw new IllegalHermesProcess("Starting Node Type is NOT NORMAL.");
 
         for (int i = 0; i < size; ++i) {

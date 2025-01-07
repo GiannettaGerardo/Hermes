@@ -1,7 +1,7 @@
 package gg.hermes.nodes;
 
 public enum HermesNodeType {
-    NORMAL,
+    TASK,
     FORWARD,
     ENDING,
     JOIN
