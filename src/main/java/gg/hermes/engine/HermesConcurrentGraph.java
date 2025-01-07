@@ -20,7 +20,7 @@ final class HermesConcurrentGraph implements HermesGraph
 {
     private static class GraphNode {
         final ITask task;
-        List<AbstractGraphArch> arches;
+        AbstractGraphArch[] arches;
 
         GraphNode(ITask task) {
             this.task = task;
@@ -131,13 +131,30 @@ final class HermesConcurrentGraph implements HermesGraph
         }
     }
 
+    private static void addArch(final AbstractGraphArch[] arches, final AbstractGraphArch newArch) {
+        final int size = arches.length;
+        for (int i = 0; i < size; ++i) {
+            if (arches[i] == null) {
+                arches[i] = newArch;
+                break;
+            }
+        }
+    }
+
     private void createArches(final HermesProcess hermesProcess)
     {
+        final int[] numberOfArchesForNode = new int[graph.length];
+        for (final Arch arch : hermesProcess.getArches())
+            ++numberOfArchesForNode[arch.src()];
+
+        final int size = hermesProcess.getArches().size();
+        int i = 0;
         try {
-            for (final Arch arch : hermesProcess.getArches()) {
+            for (; i < size; ++i) {
+                final Arch arch = hermesProcess.getArches().get(i);
                 final int sourceIdx = arch.src();
                 if (graph[sourceIdx].arches == null) {
-                    graph[sourceIdx].arches = new ArrayList<>();
+                    graph[sourceIdx].arches = new AbstractGraphArch[numberOfArchesForNode[sourceIdx]];
                 }
 
                 AbstractGraphArch newArch;
@@ -155,11 +172,11 @@ final class HermesConcurrentGraph implements HermesGraph
                     newArch = new GraphArch(arch.dst());
                 }
 
-                graph[sourceIdx].arches.add(newArch);
+                addArch(graph[sourceIdx].arches, newArch);
             }
         } catch (JsonLogicParseException e) {
             log.error(e.getMessage());
-            throw new IllegalHermesProcess("");
+            throw new IllegalHermesProcess("One of the Conditions in Arch " + i + " is not a valid Json Logic Expression.");
         }
     }
 
