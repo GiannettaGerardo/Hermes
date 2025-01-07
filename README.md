@@ -1,6 +1,6 @@
 # Hermes
-[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/GiannettaGerardo/Hermes/README.md)
-[![it](https://img.shields.io/badge/lang-it-green.svg)](https://github.com/GiannettaGerardo/Hermes/README.it.md)
+[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/GiannettaGerardo/Hermes/blob/main/README.md)
+[![it](https://img.shields.io/badge/lang-it-green.svg)](https://github.com/GiannettaGerardo/Hermes/blob/main/README.it.md)
 
 Hermes is a fast and easy to use concurrent process/workflow engine. It does not support any specific process creation standards and performs very few checks on the graph format, making Hermes very fast. The library instantiates the graph in memory and expects it to remain there for the duration of the process. Hermes can be used very well for frequently instantiated processes but shows its best on long-running processes in memory.
 
@@ -21,3 +21,5 @@ Hermes provides 2 types of arcs:
 
 - **Normal**: contains the ID of the unique destination node;
 - **Conditional**: contains an **IF** - **ELSE IF** - **ELSE** condition in the form of a list and using the [**Json Logic**](https://jsonlogic.com/) format for evaluation. Each element of the list must contain the ID of a target node.
+
+***Work in progress...***

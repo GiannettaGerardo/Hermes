@@ -1,5 +1,5 @@
 # Hermes
-[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/GiannettaGerardo/Hermes/README.md)
+[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/GiannettaGerardo/Hermes/blob/main/README.md)
 
 Hermes è un process/workflow engine concorrente, veloce e facile da usare. Non supporta alcuno standard specifico per la
 creazione di processi ed esegue pochissimi controlli sul formato del grafo, rendendo Hermes molto veloce. La libreria instanzia 
@@ -29,3 +29,5 @@ Hermes prevede 2 tipologie di archi:
 - **Normale**: contiene l'ID dell'unico nodo di destinazione;
 - **Condizionale**: contiene una condizione **IF** - **ELSE IF** - **ELSE** in forma di lista e utilizzando il formato
 [**Json Logic**](https://jsonlogic.com/) per la valutazione. Ogni elemento della lista deve contenere l'ID di un nodo di destinazione.
+
+***Work in progress...***
