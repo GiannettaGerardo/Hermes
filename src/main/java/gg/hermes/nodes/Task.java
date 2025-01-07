@@ -1,11 +1,11 @@
-package gg.hermes.tasks;
+package gg.hermes.nodes;
 
-public class NormalTask extends AbstractTask
+public class Task extends AbstractHermesNode
 {
     private final String idAsString;
     private final Integer numberOfVariables;
 
-    public NormalTask(final ITask from, final int id) {
+    public Task(final HermesNode from, final int id) {
         super(from, id);
         numberOfVariables = from.getNumberOfVariables();
         idAsString = (numberOfVariables > 0) ? Integer.toString(id) : null;
@@ -16,8 +16,8 @@ public class NormalTask extends AbstractTask
     }
 
     @Override
-    public TaskType getType() {
-        return TaskType.NORMAL;
+    public HermesNodeType getType() {
+        return HermesNodeType.NORMAL;
     }
 
     @Override

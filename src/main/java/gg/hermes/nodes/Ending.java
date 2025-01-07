@@ -1,17 +1,17 @@
-package gg.hermes.tasks;
+package gg.hermes.nodes;
 
-public class EndingTask extends AbstractTask
+public class Ending extends AbstractHermesNode
 {
     private final Boolean goodEnding;
 
-    public EndingTask(final ITask from, final int id) {
+    public Ending(final HermesNode from, final int id) {
         super(from, id);
         goodEnding = from.isGoodEnding();
     }
 
     @Override
-    public TaskType getType() {
-        return TaskType.ENDING;
+    public HermesNodeType getType() {
+        return HermesNodeType.ENDING;
     }
 
     @Override
@@ -21,7 +21,7 @@ public class EndingTask extends AbstractTask
 
     @Override
     public String toString() {
-        return "EndingTask{" +
+        return "Ending{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +

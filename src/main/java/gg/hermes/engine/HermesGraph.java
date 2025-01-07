@@ -1,6 +1,6 @@
 package gg.hermes.engine;
 
-import gg.hermes.tasks.ITask;
+import gg.hermes.nodes.HermesTask;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +18,7 @@ public interface HermesGraph
      * Never returns tasks of type {@code FORWARD}, {@code JOIN} and {@code ENDING}.
      * @return currently active tasks.
      */
-    List<ITask> getCurrentTasks();
+    List<HermesTask> getCurrentTasks();
 
     /**
      * Complete the task with id {@code taskId} and advance through the process.

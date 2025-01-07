@@ -1,13 +1,10 @@
-package gg.hermes.tasks;
+package gg.hermes.nodes;
 
-public interface ITask {
+public interface HermesTask {
     int getId();
+    HermesNodeType getType();
     String getName();
     String getDescription();
-
-    default TaskType getType() {
-        return null;
-    }
 
     default int getNumberOfVariables() {
         return 0;

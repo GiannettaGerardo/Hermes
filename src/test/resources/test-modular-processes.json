@@ -1,72 +1,138 @@
 {
-  "simple-process-1": {
-    "startingNodeId": 0,
-    "nodes": [
-      { "name": 0, "type": "NORMAL" },
-      { "name": 1, "type": "NORMAL" },
-      { "name": 2, "type": "ENDING", "goodEnding": false },
-      { "name": 3, "type": "NORMAL" },
-      { "name": 4, "type": "ENDING", "goodEnding": true },
-      { "name": 5, "type": "FORWARD" },
-      { "name": 6, "type": "NORMAL" },
-      { "name": 7, "type": "JOIN" },
-      { "name": 8, "type": "FORWARD" }
-    ],
-    "arches": {
-      "only-condition-no-data": [
-        { "src": 0, "conditions": [{ "dst": 3, "IF": "{ \"===\": [1, 1] }" }] },
-        { "src": 0, "conditions": [{ "dst": 2, "IF": "{ \"===\": [1, 2] }" }] },
-        { "src": 3, "dst": 4 }
-      ],
-      "only-condition-with-data": [
-        {
-          "src": 0,
+  "only-condition-no-data": {
+    "process": [
+      {
+        "name": "id_0", "type": "NORMAL",
+        "to": [
+          { "conditions": [{ "dst": 2, "IF": "{ \"===\": [1, 1] }" }] },
+          { "conditions": [{ "dst": 1, "IF": "{ \"===\": [1, 2] }" }] }
+        ]
+      },
+      { "name": "id_1", "type": "ENDING", "goodEnding": false },
+      {
+        "name": "id_2", "type": "NORMAL",
+        "to": [{ "dst": 3 }]
+      },
+      { "name": "id_3", "type": "ENDING", "goodEnding": true }
+    ]
+  },
+
+  "only-condition-with-data": {
+    "process": [
+      {
+        "name": "id_0", "type": "NORMAL", "numberOfVariables": 1,
+        "to": [
+          {
+            "conditions": [
+              { "dst": 2, "IF": "{ \"!==\": [{ \"var\": \"0.my-value\" }, 1] }" },
+              { "dst": 1 }
+            ]
+          }
+        ]
+      },
+      { "name": "id_1", "type": "ENDING", "goodEnding": false },
+      {
+        "name": "id_2", "type": "NORMAL",
+        "to": [{ "dst": 3 }]
+      },
+      { "name": "id_3", "type": "ENDING", "goodEnding": true }
+    ]
+  },
+
+  "condition-and-forward-with-data": {
+    "process": [
+      {
+        "name": "id_0", "type": "NORMAL", "numberOfVariables": 1,
+        "to": [
+          {
+            "conditions": [
+              { "dst": 2, "IF": "{ \"!==\": [{ \"var\": \"0.my-value\" }, 1] }" },
+              { "dst": 4 }
+            ]
+          }
+        ]
+      },
+      { "name": "id_1", "type": "ENDING", "goodEnding": false },
+      {
+        "name": "id_2", "type": "NORMAL",
+        "to": [{ "dst": 3 }]
+      },
+      { "name": "id_3", "type": "ENDING", "goodEnding": true },
+      {
+        "name": "id_4", "type": "FORWARD",
+        "to": [{
           "conditions": [
-            { "dst": 3, "IF": "{ \"!==\": [{ \"var\": \"0.my-value\" }, 1] }" },
-            { "dst": 2 }
+            { "dst": 2, "IF": "{ \"!==\": [{ \"var\": \"0.my-value\" }, 1] }" },
+            { "dst": 1 }
           ]
-        },
-        { "src": 3, "dst": 4 }
-      ],
-      "condition-and-forward-with-data": [
-        {
-          "src": 0,
-          "conditions": [
-            { "dst": 3, "IF": "{ \"!==\": [{ \"var\": \"0.my-value\" }, 1] }" },
-            { "dst": 5 }
-          ]
-        },
-        { "src": 3, "dst": 4 },
-        {
-          "src": 5,
-          "conditions": [
-            { "dst": 3, "IF": "{ \"!==\": [{ \"var\": \"0.my-value\" }, 1] }" },
-            { "dst": 2 }
-          ]
-        }
-      ],
-      "simple-fork-join": [
-        { "src": 0, "dst": 1 },
-        { "src": 0, "dst": 6 },
-        { "src": 1, "dst": 7 },
-        { "src": 6, "dst": 7 },
-        { "src": 7, "dst": 3 },
-        { "src": 3, "dst": 4 }
-      ],
-      "stalemate-fork-join-forward": [
-        { "src": 0, "dst": 5 },
-        { "src": 0, "dst": 6 },
-        { "src": 5, "dst": 7 },
-        { "src": 6, "dst": 7 },
-        { "src": 7, "dst": 8 },
-        {
-          "src": 8,
+        }]
+      }
+    ]
+  },
+
+  "simple-fork-join": {
+    "process": [
+      { "name": "id_0", "type": "NORMAL", "to": [{ "dst": 1 }, { "dst": 6 }] },
+      { "name": "id_1", "type": "NORMAL", "to": [{ "dst": 7 }] },
+      { "name": "id_2", "type": "ENDING", "goodEnding": false },
+      { "name": "id_3", "type": "NORMAL", "to": [{ "dst": 4 }] },
+      { "name": "id_4", "type": "ENDING", "goodEnding": true },
+      { "name": "id_5", "type": "FORWARD" },
+      { "name": "id_6", "type": "NORMAL", "to": [{ "dst": 7 }] },
+      { "name": "id_7", "type": "JOIN", "to": [{ "dst": 3 }] }
+    ]
+  },
+
+  "stalemate-fork-join-forward": {
+    "process": [
+      { "name": "id_0", "type": "NORMAL", "to": [{ "dst": 5 }, { "dst": 6 }] },
+      { "name": "id_1", "type": "NORMAL" },
+      { "name": "id_2", "type": "ENDING", "goodEnding": false },
+      { "name": "id_3", "type": "NORMAL" },
+      { "name": "id_4", "type": "ENDING", "goodEnding": true },
+      { "name": "id_5", "type": "FORWARD", "to": [{ "dst": 7 }] },
+      { "name": "id_6", "type": "NORMAL", "numberOfVariables": 1, "to": [{ "dst": 7 }] },
+      { "name": "id_7", "type": "JOIN", "to": [{ "dst": 8 }] },
+      {
+        "name": "id_8", "type": "FORWARD",
+        "to": [{
           "conditions": [
             { "dst": 4, "IF": "{ \"===\": [{ \"var\": \"6.not_one\" }, \"one\"] }" },
             { "dst": 7 }
           ]
-        }
-      ]
-    }
+        }]
+      }
+    ]
+  },
+
+  "for-loop-1": {
+    "process": [
+      {
+        "name": "id_0", "type": "NORMAL", "numberOfVariables": 1,
+        "to": [{
+          "conditions": [
+            { "dst": 0, "IF": "{ \"<\": [{ \"var\": \"0.i\" }, 3] }" },
+            { "dst": 1 }
+          ]
+        }]
+      },
+      { "name": "id_1", "type": "ENDING", "goodEnding": true }
+    ]
+  },
+
+  "for-loop-2": {
+    "process": [
+      { "name": "id_0", "type": "NORMAL", "numberOfVariables": 1, "to": [{ "dst": 2 }] },
+      { "name": "id_1", "type": "ENDING", "goodEnding": true },
+      {
+        "name": "id_2", "type": "FORWARD",
+        "to": [{
+          "conditions": [
+            { "dst": 0, "IF": "{ \"<\": [{ \"var\": \"0.i\" }, 3] }" },
+            { "dst": 1 }
+          ]
+        }]
+      }
+    ]
   }
 }

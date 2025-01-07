@@ -1,4 +1,4 @@
-package gg.hermes.exception;
+package gg.hermes;
 
 public class IllegalHermesProcess extends RuntimeException {
     public IllegalHermesProcess(String message) {

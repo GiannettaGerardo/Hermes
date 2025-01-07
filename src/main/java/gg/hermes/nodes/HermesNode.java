@@ -1,64 +1,67 @@
-package gg.hermes.tasks;
+package gg.hermes.nodes;
 
-import gg.hermes.exception.IllegalHermesProcess;
+import gg.hermes.Arch;
+import gg.hermes.IllegalHermesProcess;
 
-public class Task implements ITask
+import java.util.List;
+
+public class HermesNode
 {
-    private TaskType type;
+    private HermesNodeType type;
     private String name;
     private String description;
     private int numberOfVariables;
     private boolean goodEnding;
     private int archesToJoin;
+    private List<Arch> to;
 
-    private Task() {}
+    private HermesNode() {}
 
-    public Task(TaskType type, String name, String description,
-                int numberOfVariables, boolean goodEnding, int archesToJoin) {
+    public HermesNode(HermesNodeType type, String name, String description, int numberOfVariables,
+                      boolean goodEnding, int archesToJoin, List<Arch> to)
+    {
         this.type = type;
         this.name = name;
         this.description = description;
         this.numberOfVariables = numberOfVariables;
         this.goodEnding = goodEnding;
         this.archesToJoin = archesToJoin;
+        this.to = to;
     }
 
-    @Override
     public int getId() {
         return -1;
     }
 
-    @Override
-    public TaskType getType() {
+    public HermesNodeType getType() {
         return type;
     }
 
-    @Override
     public int getNumberOfVariables() {
         return numberOfVariables;
     }
 
-    @Override
     public boolean isGoodEnding() {
         return goodEnding;
     }
 
-    @Override
     public int getArchesToJoin() {
         return archesToJoin;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public String getDescription() {
         return description;
     }
 
-    public void setType(TaskType type) {
+    public List<Arch> getTo() {
+        return to;
+    }
+
+    public void setType(HermesNodeType type) {
         this.type = type;
     }
 
@@ -82,30 +85,35 @@ public class Task implements ITask
         this.archesToJoin = archesToJoin;
     }
 
+    public void setTo(List<Arch> to) {
+        this.to = to;
+    }
+
     public void validate() {
         switch (type) {
             case NORMAL:
                 if (numberOfVariables < 0)
-                    throw new IllegalHermesProcess("NORMAL task has LESS THAN ZERO number of variables.");
+                    throw new IllegalHermesProcess("NORMAL node has LESS THAN ZERO number of variables.");
                 break;
             case JOIN:
                 if (archesToJoin < 0)
-                    throw new IllegalHermesProcess("JOIN task has LESS THAN ZERO number of arches to join.");
+                    throw new IllegalHermesProcess("JOIN node has LESS THAN ZERO number of arches to join.");
                 break;
             case FORWARD, ENDING: break;
-            default: throw new IllegalHermesProcess("NULL or UNRECOGNIZED task Type.");
+            default: throw new IllegalHermesProcess("NULL or UNRECOGNIZED node Type.");
         }
     }
 
     @Override
     public String toString() {
-        return "Task{" +
+        return "HermesNode{" +
                 "type=" + type +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", numberOfVariables=" + numberOfVariables +
                 ", goodEnding=" + goodEnding +
                 ", archesToJoin=" + archesToJoin +
+                ", to=" + to +
                 '}';
     }
 }

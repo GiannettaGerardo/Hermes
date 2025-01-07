@@ -1,18 +1,12 @@
-package gg.hermes.tasks;
-
-import gg.hermes.exception.IllegalHermesProcess;
+package gg.hermes;
 
 import java.util.List;
 
 public record Arch(
-        int src,
         int dst,
         List<ConditionArch> conditions
 ) {
     public void validate(final int nodeListSize, final int archIndex) {
-        if (src < 0 || src >= nodeListSize)
-            throw new IllegalHermesProcess("UNRECOGNIZED Arch Source in index " + archIndex);
-
         if (conditions != null) {
             if (conditions.isEmpty())
                 throw new IllegalHermesProcess("EMPTY Condition list.");
