@@ -9,32 +9,10 @@ public class Join extends AbstractHermesNode
     private final int archesToJoin;
     private final AtomicInteger waitingPointers;
 
-    public Join(final HermesNode from, final int id, final HermesProcess hermes) {
+    public Join(final HermesNode from, final int id) {
         super(from, id);
 
-        int counter = 0;
-        if (from.getArchesToJoin() <= 0) {
-            for (var node : hermes.getProcess()) {
-                if (node.getTo() == null) continue;
-                for (var arch : node.getTo()) {
-                    if (arch.conditions() != null) {
-                        for (var cond : arch.conditions()) {
-                            if (cond.dst() == id) {
-                                ++counter;
-                                break;
-                            }
-                        }
-                    } else {
-                        if (arch.dst() == id)
-                            ++counter;
-                    }
-                }
-            }
-            archesToJoin = counter;
-        } else {
-            archesToJoin = from.getArchesToJoin();
-        }
-
+        archesToJoin = from.getArchesToJoin();
         waitingPointers = new AtomicInteger(0);
     }
 

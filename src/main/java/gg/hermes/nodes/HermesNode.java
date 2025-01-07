@@ -89,18 +89,33 @@ public class HermesNode
         this.to = to;
     }
 
-    public void validate() {
+    public void validate(final int id) {
         switch (type) {
             case NORMAL:
                 if (numberOfVariables < 0)
                     throw new IllegalHermesProcess("NORMAL node has LESS THAN ZERO number of variables.");
                 break;
             case JOIN:
-                if (archesToJoin < 0)
-                    throw new IllegalHermesProcess("JOIN node has LESS THAN ZERO number of arches to join.");
+                checkJoin(id);
                 break;
             case FORWARD, ENDING: break;
             default: throw new IllegalHermesProcess("NULL or UNRECOGNIZED node Type.");
+        }
+    }
+
+    private void checkJoin(final int id) {
+        if (archesToJoin <= 0)
+            throw new IllegalHermesProcess("JOIN node has ZERO or LESS number of arches to join.");
+        for (var arch : to) {
+            if (arch.conditions() != null) {
+                for (var cond : arch.conditions()) {
+                    if (cond.dst() == id)
+                        throw new IllegalHermesProcess("JOIN Node cannot have a Self Reference Arch.");
+                }
+            } else {
+                if (arch.dst() == id)
+                    throw new IllegalHermesProcess("JOIN Node cannot have a Self Reference Arch.");
+            }
         }
     }
 

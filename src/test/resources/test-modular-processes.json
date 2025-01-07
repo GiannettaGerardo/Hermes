@@ -79,7 +79,7 @@
       { "name": "id_4", "type": "ENDING", "goodEnding": true },
       { "name": "id_5", "type": "FORWARD" },
       { "name": "id_6", "type": "NORMAL", "to": [{ "dst": 7 }] },
-      { "name": "id_7", "type": "JOIN", "to": [{ "dst": 3 }] }
+      { "name": "id_7", "type": "JOIN", "archesToJoin": 2, "to": [{ "dst": 3 }] }
     ]
   },
 
@@ -92,7 +92,7 @@
       { "name": "id_4", "type": "ENDING", "goodEnding": true },
       { "name": "id_5", "type": "FORWARD", "to": [{ "dst": 7 }] },
       { "name": "id_6", "type": "NORMAL", "numberOfVariables": 1, "to": [{ "dst": 7 }] },
-      { "name": "id_7", "type": "JOIN", "to": [{ "dst": 8 }] },
+      { "name": "id_7", "type": "JOIN", "archesToJoin": 2, "to": [{ "dst": 8 }] },
       {
         "name": "id_8", "type": "FORWARD",
         "to": [{

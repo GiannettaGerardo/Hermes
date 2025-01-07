@@ -32,30 +32,15 @@ public class HermesProcess
             var task = process.get(i);
             if (task == null)
                 throw new IllegalHermesProcess("Node " + i + " is NULL.");
-            task.validate();
+            task.validate(i);
             if (task.getType() == HermesNodeType.ENDING)
                 ++endingCounter;
-            else if (task.getType() == HermesNodeType.JOIN)
-                checkJoinNode(task);
         }
 
         if (endingCounter == 0)
             throw new IllegalHermesProcess("No ENDING nodes found.");
 
         checkArches();
-    }
-
-    private void checkJoinNode(final HermesNode hermesNode) {
-        for (var arch : hermesNode.getTo()) {
-            if (hermesNode.getId() == arch.dst())
-                throw new IllegalHermesProcess("JOIN Node cannot have a Self Reference Arch.");
-        }
-        final int archesToJoin = hermesNode.getArchesToJoin();
-        if (archesToJoin > 0 && hermesNode.getTo() != null && hermesNode.getTo().size() < archesToJoin) {
-            throw new IllegalHermesProcess(
-                    "Arches to Join attribute is greater than the actual count of arches that enter in the node."
-            );
-        }
     }
 
     private void checkArches() {

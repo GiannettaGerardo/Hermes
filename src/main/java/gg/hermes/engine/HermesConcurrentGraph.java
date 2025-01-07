@@ -119,7 +119,7 @@ final class HermesConcurrentGraph implements HermesGraph
         for (int i = 0; i < nodeListSize; ++i)
         {
             var task = hermesProcess.getProcess().get(i);
-            graph[i] = new GraphNode(HermesNodeFactory.createNewTaskFrom(task, i, hermesProcess));
+            graph[i] = new GraphNode(HermesNodeFactory.createNewTaskFrom(task, i));
             if (graph[i].task.getNumberOfVariables() > 0)
                 ++howManyNodeWithVariables;
             if (task.getTo() != null)

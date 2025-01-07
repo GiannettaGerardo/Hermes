@@ -27,7 +27,7 @@ public class Task extends AbstractHermesNode
 
     @Override
     public String toString() {
-        return "NormalTask{" +
+        return "Task{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
