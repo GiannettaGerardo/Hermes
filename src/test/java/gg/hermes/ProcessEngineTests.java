@@ -1,10 +1,9 @@
 package gg.hermes;
 
+import gg.hermes.engine.HermesConcurrentGraph;
 import gg.hermes.engine.HermesGraph;
-import gg.hermes.engine.HermesGraphFactory;
 import gg.hermes.nodes.HermesTask;
 import gg.hermes.testutility.ProcessesUtility;
-import gg.hermes.testutility.TestLog;
 import io.github.jamsesso.jsonlogic.JsonLogicConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,7 +26,7 @@ public class ProcessEngineTests
     public void testOnlyConditionNoDataGoodEnding() throws Exception
     {
         HermesProcess process = ProcessesUtility.get("only-condition-no-data");
-        HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
+        HermesGraph graph = new HermesConcurrentGraph(process, jsonLogicConfiguration, ProcessesUtility.logger);
         int res = 0;
 
         for (int i = 0; i < 2; ++i) {
@@ -41,7 +40,7 @@ public class ProcessEngineTests
     public void testOnlyConditionWithDataBadEnding() throws Exception
     {
         HermesProcess process = ProcessesUtility.get("only-condition-with-data");
-        HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
+        HermesGraph graph = new HermesConcurrentGraph(process, jsonLogicConfiguration, ProcessesUtility.logger);
 
         final int res = nextTasks(graph, Collections.singletonMap("my-value", 1));
 
@@ -52,7 +51,7 @@ public class ProcessEngineTests
     public void testConditionAndForwardWithDataBadEnding() throws Exception
     {
         HermesProcess process = ProcessesUtility.get("condition-and-forward-with-data");
-        HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
+        HermesGraph graph = new HermesConcurrentGraph(process, jsonLogicConfiguration, ProcessesUtility.logger);
 
         final int res = nextTasks(graph, Collections.singletonMap("my-value", 1));
 
@@ -63,7 +62,7 @@ public class ProcessEngineTests
     public void testLockRejectedWhenIncorrectTaskIdxParameter() throws Exception
     {
         HermesProcess process = ProcessesUtility.get("only-condition-no-data");
-        HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
+        HermesGraph graph = new HermesConcurrentGraph(process, jsonLogicConfiguration, ProcessesUtility.logger);
 
         int res = graph.completeTask(1000, null);
 
@@ -74,7 +73,7 @@ public class ProcessEngineTests
     public void testCompleteEndingTaskResultsInGoodEnding() throws Exception
     {
         HermesProcess process = ProcessesUtility.get("only-condition-no-data");
-        HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
+        HermesGraph graph = new HermesConcurrentGraph(process, jsonLogicConfiguration, ProcessesUtility.logger);
 
         nextTasks(graph, null);
         nextTasks(graph, null);
@@ -88,7 +87,7 @@ public class ProcessEngineTests
     public void tesGetCurrentTasksAfterEndingResultsInEmptyList() throws Exception
     {
         HermesProcess process = ProcessesUtility.get("only-condition-no-data");
-        HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
+        HermesGraph graph = new HermesConcurrentGraph(process, jsonLogicConfiguration, ProcessesUtility.logger);
 
         nextTasks(graph, null);
         nextTasks(graph, null);
@@ -102,7 +101,7 @@ public class ProcessEngineTests
     public void testSimpleForkJoinShouldWork() throws Exception
     {
         HermesProcess process = ProcessesUtility.get("simple-fork-join");
-        HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
+        HermesGraph graph = new HermesConcurrentGraph(process, jsonLogicConfiguration, ProcessesUtility.logger);
         List<HermesTask> nextNodes;
         int result;
 
@@ -137,7 +136,7 @@ public class ProcessEngineTests
     public void testStalemateShouldReturnStalemateEnding() throws Exception
     {
         HermesProcess process = ProcessesUtility.get("stalemate-fork-join-forward");
-        HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
+        HermesGraph graph = new HermesConcurrentGraph(process, jsonLogicConfiguration, ProcessesUtility.logger);
         List<HermesTask> nextNodes;
         int result;
 
@@ -156,7 +155,7 @@ public class ProcessEngineTests
 
     private void forLoopGenericTest(HermesProcess process) throws Exception
     {
-        HermesGraph graph = HermesGraphFactory.getConcurrentGraph(process, jsonLogicConfiguration, TestLog::new);
+        HermesGraph graph = new HermesConcurrentGraph(process, jsonLogicConfiguration, ProcessesUtility.logger);
         int result;
         int i = 0;
         List<HermesTask> nextNodes = graph.getCurrentTasks();

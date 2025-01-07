@@ -7,6 +7,7 @@ import java.util.*;
 
 public class HermesProcess
 {
+    private String processName;
     private List<HermesNode> process;
 
     private HermesProcess() {}
@@ -19,7 +20,16 @@ public class HermesProcess
         return process;
     }
 
+    public String getProcessName() {
+        return processName;
+    }
+
     public void validate() {
+        if (processName == null || processName.isBlank())
+            throw new IllegalHermesProcess("NULL or BLANK process name.");
+        if (processName.length() > 64)
+            throw new IllegalHermesProcess("Process name TOO LONG.");
+
         int size;
         int endingCounter = 0;
         if (process == null || (size = process.size()) == 0)

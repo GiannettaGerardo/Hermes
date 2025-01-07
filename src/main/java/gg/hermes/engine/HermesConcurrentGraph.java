@@ -16,7 +16,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-final class HermesConcurrentGraph implements HermesGraph
+public final class HermesConcurrentGraph implements HermesGraph
 {
     private static final class GraphNode {
         final HermesTask task;
@@ -73,7 +73,7 @@ final class HermesConcurrentGraph implements HermesGraph
                     return (boolean) jsonLogicEvaluator.evaluate(condition, graphVariables);
                 }
                 catch (JsonLogicException | ClassCastException e) {
-                    log.error(e.getMessage());
+                    log.error("[{}]:[{}]: {}", processName, hmHashcode, e.getMessage());
                     throw new IllegalHermesProcess(
                             String.format("Condition of Arch to node %d is not a correct Json Logic Expression.", destination));
                 }
@@ -84,6 +84,8 @@ final class HermesConcurrentGraph implements HermesGraph
     private static final int TRUE = 1;
     private static final int FALSE = 0;
 
+    private final String processName;
+    private final int hmHashcode;
     private final Logger log;
     private final GraphNode[] graph;
     private final Map<String, Map<String, Object>> graphVariables;
@@ -91,12 +93,14 @@ final class HermesConcurrentGraph implements HermesGraph
     private final JsonLogicEvaluator jsonLogicEvaluator;
     private volatile int isEnd;
 
-    public HermesConcurrentGraph(HermesProcess hermesProcess, JsonLogicConfiguration jsonLogicConf, Logger log)
+    public HermesConcurrentGraph(HermesProcess hermesProcess, JsonLogicConfiguration jsonLogicConf, Logger logger)
     {
         // complete validation of the process
         hermesProcess.validate();
 
-        this.log = log;
+        hmHashcode = hermesProcess.hashCode();
+        processName = hermesProcess.getProcessName();
+        log = logger;
         isEnd = 0;
         jsonLogicEvaluator = jsonLogicConf.getEvaluator();
 
@@ -148,7 +152,7 @@ final class HermesConcurrentGraph implements HermesGraph
             }
             return cga;
         } catch (JsonLogicParseException e) {
-            log.error(e.getMessage());
+            log.error("[{}]:[{}]: {}", processName, hmHashcode, e.getMessage());
             throw new IllegalHermesProcess("One of the Conditions is not a valid Json Logic Expression.");
         }
     }
@@ -280,9 +284,8 @@ final class HermesConcurrentGraph implements HermesGraph
                     break;
 
                 default:
-                    String error = "Invalid Node Type at run time.";
-                    log.error(error);
-                    throw new IllegalHermesProcess(error);
+                    log.error("[{}]:[{}]: Invalid Node Type at run time.", processName, hmHashcode);
+                    throw new IllegalHermesProcess("Invalid Node Type at run time.");
             }
         }
         if (! isSelfLoop)

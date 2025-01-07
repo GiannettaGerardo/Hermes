@@ -21,12 +21,12 @@ public interface HermesGraph
     List<HermesTask> getCurrentTasks();
 
     /**
-     * Complete the task with id {@code taskId} and advance through the process.
-     * @param taskId the task id of a current task.
+     * Complete the task with id {@code nodeId} and advance through the process.
+     * @param nodeId the task id of a current task.
      * @return a code that represent the result:
      * <ul>
      *     <li>{@code LOCK_REJECTED}: the attempt to obtain the lock for this task id failed
-     *     or there is no 'taskId' in the currently active tasks;</li>
+     *     or there is no 'nodeId' in the currently active tasks;</li>
      *     <li>{@code SUCCESS}: the task has been completed and the process has advanced;</li>
      *     <li>{@code STALEMATE_ENDING}: the process did not terminate with an ENDING task but is stuck in a state
      *     from which it is no longer possible to exit. The process construction should probably be revised;</li>
@@ -34,17 +34,17 @@ public interface HermesGraph
      *     <li>{@code BAD_ENDING}: the process ended with a bad ENDING task.</li>
      * </ul>
      */
-    int completeTask(int taskId);
+    int completeTask(int nodeId);
 
     /**
-     * Complete the task with id {@code taskId} and advance through the process.
-     * @param taskId the task id of a current task.
+     * Complete the task with id {@code nodeId} and advance through the process.
+     * @param nodeId the task id of a current task.
      * @param variables variables to save for this task (if the task allows them and the number of variables
      *                  are less or equals the expected number for this task, otherwise the variables will be ignored).
      * @return a code that represent the result:
      * <ul>
      *     <li>{@code LOCK_REJECTED}: the attempt to obtain the lock for this task id failed
-     *     or there is no 'taskId' in the currently active tasks;</li>
+     *     or there is no 'nodeId' in the currently active tasks;</li>
      *     <li>{@code SUCCESS}: the task has been completed and the process has advanced;</li>
      *     <li>{@code STALEMATE_ENDING}: the process did not terminate with an ENDING task but is stuck in a state
      *     from which it is no longer possible to exit. The process construction should probably be revised;</li>
@@ -52,5 +52,5 @@ public interface HermesGraph
      *     <li>{@code BAD_ENDING}: the process ended with a bad ENDING task.</li>
      * </ul>
      */
-    int completeTask(int taskId, Map<String, Object> variables);
+    int completeTask(int nodeId, Map<String, Object> variables);
 }
